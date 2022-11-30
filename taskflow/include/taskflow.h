@@ -47,9 +47,9 @@ class Task {
 class TaskManager {
  public:
   explicit TaskManager(std::vector<Task*> tasks)
-      : tasks_(tasks), worker_nums_(4) {}
+      : worker_nums_(4), tasks_(tasks) {}
   TaskManager(std::vector<Task*> tasks, int worker_nums)
-      : tasks_(tasks), worker_nums_(worker_nums) {}
+      : worker_nums_(worker_nums), tasks_(tasks) {}
 
   bool Init() {
     BuildDependencyMap();
@@ -80,7 +80,7 @@ class TaskManager {
           worker->Post(t, false);
         }
       }
-      if (map_finish_.size() == tasks_.size()) {
+      if (uint64_t(map_finish_.size()) == tasks_.size()) {
         std::cout << "All tasks have finished!\n";
         break;
       }
@@ -120,7 +120,7 @@ class TaskManager {
           found = true;
         }
       }
-      if (map_finish.size() == tasks_.size()) {
+      if (uint64_t(map_finish.size()) == tasks_.size()) {
         return false;
       }
       if (!found) {
@@ -130,7 +130,7 @@ class TaskManager {
   }
 
  private:
-  int worker_nums_;
+  uint64_t worker_nums_;
   std::vector<Task*> tasks_;
   stone::ConcurrentMap<string, int> dependency_map_;
   stone::ConcurrentMap<string, std::vector<Task*>> dependend_map_;
