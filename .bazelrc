@@ -1,0 +1,3 @@
+build --cxxopt="--std=c++17"
+build --jobs=2
+build --copt=-O2
