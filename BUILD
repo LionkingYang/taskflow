@@ -2,7 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 cc_binary(
     name = "task_flow",
-    srcs = ["taskflow/main.cc"],
+    srcs = ["taskflow/main.cpp"],
     deps = [ "//:task_flow_dep"],
 )
 
