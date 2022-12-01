@@ -83,9 +83,11 @@ class ConcurrentMap {
   // 返回表里的key数量
   int size() { return table_.size(); }
 
-  typename TableType::iterator begin() { return table_.begin(); };
+  typename TableType::iterator begin() { return table_.begin(); }
 
-  typename TableType::iterator end() { return table_.end(); };
+  typename TableType::iterator end() { return table_.end(); }
+
+  void clear() { table_.clear(); }
 
  private:
   TableType table_;

@@ -30,3 +30,4 @@ CMakeLists.txt
 *.jce.h
 *.jce.cc
 bazel-*
+.vscode

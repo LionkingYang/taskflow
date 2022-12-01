@@ -1,0 +1,39 @@
+{
+    "tasks": [
+        {
+            "task_name": "a",
+            "dependencies": []
+        },
+        {
+            "task_name": "b",
+            "dependencies": [
+                "a"
+            ]
+        },
+        {
+            "task_name": "c",
+            "dependencies": [
+                "a"
+            ]
+        },
+        {
+            "task_name": "d",
+            "dependencies": [
+                "b",
+                "c"
+            ]
+        },
+        {
+            "task_name": "e",
+            "dependencies": [
+                "d"
+            ]
+        },
+        {
+            "task_name": "f",
+            "dependencies": [
+                "e"
+            ]
+        }
+    ]
+}

@@ -25,7 +25,6 @@ void TaskWorker::Run() {
   if (_init_task) {
     _init_task();
   }
-  // struct epoll_event events[MAX_EVENTS_SIZE];
   while (_running) {
     HandleTasks();
     struct timespec ts;
@@ -58,6 +57,5 @@ void TaskWorker::Post(const AnyFunc &t, bool notify) {
   if (notify) {
     sem_post(&_sem);
   }
-  // eventfd_write(_notify_fd, 1);
 }
 }  // namespace taskflow

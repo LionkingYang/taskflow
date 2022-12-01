@@ -1,8 +1,6 @@
 #pragma once
 
 #include <semaphore.h>
-#include <sys/epoll.h>
-#include <sys/eventfd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -25,8 +23,6 @@ class TaskWorker {
  private:
   std::thread *_loop_thread = nullptr;
   tbb::concurrent_queue<AnyFunc *> _queue;
-  // int _notify_fd = -1;
-  // int _epoll_fd = -1;
   sem_t _sem;
   int _wait_timeout_us = 10000;
   AnyFunc _routine_task;
@@ -45,5 +41,4 @@ class TaskWorker {
   void Post(const AnyFunc &t, bool notify);
   ~TaskWorker();
 };
-
 }  // namespace taskflow
