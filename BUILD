@@ -10,14 +10,8 @@ cc_library(
     name = "task_flow_dep",
     srcs = glob(["taskflow/src/**/*.cpp"]),
     hdrs = glob(["taskflow/include/**/*.h"]),
-    deps = ["//:tbb"],
+    deps = ["@oneTBB//:tbb"],
     linkopts = [
         "-lpthread"
     ],
-)
-
-cc_library(
-    name = "tbb",
-    srcs = ["thirdparty/tbb/libtbb.so"],
-    hdrs = glob(["thirdparty/tbb/include/**/*.h"]),
 )

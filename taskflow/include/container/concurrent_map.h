@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "thirdparty/tbb/include/tbb/concurrent_hash_map.h"
+#include "oneapi/tbb/concurrent_hash_map.h"
 
 namespace stone {
 

@@ -15,7 +15,7 @@
 #include <string>
 #include <thread>
 
-#include "thirdparty/tbb/include/tbb/concurrent_queue.h"
+#include "oneapi/tbb/concurrent_queue.h"
 
 using AnyFunc = std::function<void(void)>;
 

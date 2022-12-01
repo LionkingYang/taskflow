@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdlib>
 #include <functional>
@@ -25,23 +26,23 @@ class Task {
  public:
   explicit Task(const std::string& task_name) : task_name_(task_name) {}
   Task(std::string task_name, AnyFunc* job)
-      : task_name_(task_name), job_(job) {}
+      : task_name_(task_name), job_(job), in_progress_(false) {}
 
  public:
   std::string GetTaskName() const { return task_name_; }
   int GetDependencyCount() const { return dependencies_.size(); }
   std::vector<Task*> GetDependencies() const { return dependencies_; }
   AnyFunc* GetJob() { return job_; }
-  bool GetFlag() { return in_progress_; }
+  bool GetFlag() { return in_progress_.load(); }
 
   void AddDependecy(Task* task) { dependencies_.emplace_back(task); }
-  void SetFlag(bool flag) { in_progress_ = flag; }
+  void SetFlag(bool flag) { in_progress_.store(flag); }
 
  private:
   const std::string task_name_;
   AnyFunc* job_ = nullptr;
   std::vector<Task*> dependencies_;
-  bool in_progress_ = false;
+  std::atomic<bool> in_progress_;
 };
 
 class TaskManager {
