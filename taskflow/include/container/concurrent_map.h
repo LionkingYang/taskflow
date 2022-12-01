@@ -4,7 +4,7 @@
 
 #include "oneapi/tbb/concurrent_hash_map.h"
 
-namespace stone {
+namespace taskflow {
 
 template <typename K, typename V>
 class ConcurrentMap {
@@ -92,4 +92,4 @@ class ConcurrentMap {
  private:
   TableType table_;
 };
-}  // namespace stone
+}  // namespace taskflow

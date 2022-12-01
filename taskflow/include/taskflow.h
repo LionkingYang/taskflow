@@ -37,7 +37,7 @@ struct Jobs {
 struct TaskContext {
   const std::any global_input;
   std::any* global_output;
-  stone::ConcurrentMap<string, std::any> task_output;
+  taskflow::ConcurrentMap<string, std::any> task_output;
   TaskContext(const std::any& input, std::any* output)
       : global_input(input), global_output(output) {}
 };
@@ -101,9 +101,9 @@ class TaskManager {
  private:
   uint64_t worker_nums_;
   std::vector<std::shared_ptr<Task>> tasks_;
-  stone::ConcurrentMap<string, int> dependency_map_;
-  stone::ConcurrentMap<string, std::vector<Task*>> dependend_map_;
+  taskflow::ConcurrentMap<string, int> dependency_map_;
+  taskflow::ConcurrentMap<string, std::vector<Task*>> dependend_map_;
   std::vector<std::shared_ptr<taskflow::TaskWorker>> workers_;
-  stone::ConcurrentMap<string, int> map_finish_;
+  taskflow::ConcurrentMap<string, int> map_finish_;
   std::shared_ptr<TaskContext> input_context_;
 };
