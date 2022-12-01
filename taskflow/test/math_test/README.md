@@ -17,4 +17,4 @@ input->a->b/c->d->e->f->output
 
 执行方法：
 
-bazel run //:math_tes
+bazel run //:math_test
