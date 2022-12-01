@@ -1,0 +1,57 @@
+{
+    "tasks": [
+        {
+            "task_name": "ParseRequest",
+            "dependencies": []
+        },
+        {
+            "task_name": "UU",
+            "dependencies": [
+                "ParseRequest"
+            ]
+        },
+        {
+            "task_name": "BlackList",
+            "dependencies": [
+                "ParseRequest"
+            ]
+        },
+        {
+            "task_name": "RecallCB",
+            "dependencies": [
+                "UU",
+                "BlackList"
+            ]
+        },
+        {
+            "task_name": "RecallEMB",
+            "dependencies": [
+                "UU",
+                "BlackList"
+            ]
+        },
+        {
+            "task_name": "RecallMerge",
+            "dependencies": [
+                "RecallCB",
+                "RecallEMB"
+            ]
+        },
+        {
+            "task_name": "Rank",
+            "dependencies": [
+                "RecallMerge"
+            ]
+        },
+        {
+            "task_name": "Policy",
+            "dependencies": [
+                "RecallMerge"
+            ]
+        },
+        {
+            "task_name": "FillResponse",
+            "dependencies": []
+        }
+    ]
+}

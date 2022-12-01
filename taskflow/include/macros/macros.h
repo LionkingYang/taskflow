@@ -840,3 +840,9 @@
 #define WriteToOutput(task_name, result, type) \
   WriteTaskOutput(task_name, type) = GetValue(type)(result);
 #define WriteToFinalOutput(result, type) FinalOutput = GetValue(type)(result);
+#define TryCast(task_name, type)                                           \
+  try {                                                                    \
+    std::any_cast<type>(context->task_output[KCFG_STRINGIZE2(task_name)]); \
+  } catch (const std::bad_any_cast& e) {                                   \
+    std::cout << KCFG_STRINGIZE2(task_name) << ":" << e.what() << '\n';    \
+  }

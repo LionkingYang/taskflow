@@ -6,6 +6,12 @@ cc_binary(
     deps = [ "//:task_flow_dep"],
 )
 
+cc_binary(
+    name = "recmd_test",
+    srcs = ["taskflow/test/recmd_test/main.cpp","taskflow/test/recmd_test/recmd_op.h", "taskflow/test/recmd_test/struct_define.h"],
+    deps = [ "//:task_flow_dep"],
+)
+
 cc_library(
     name = "task_flow_dep",
     srcs = glob(["taskflow/src/**/*.cpp"]),
