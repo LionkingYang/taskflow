@@ -14,3 +14,7 @@ input->a->b/c->d->e->f->output
 算子e: d+1
 
 算子f: e+1并且输出结果
+
+执行方法：
+
+bazel run //:math_tes
