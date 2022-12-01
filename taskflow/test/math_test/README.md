@@ -1,5 +1,7 @@
 # 实现简单的数学计算
-依赖关系见test_json
+可以手动构建依赖 or 从json中提取依赖构建图
+
+本示例依赖关系见test_json
 
 input->a->b/c->d->e->f->output
 

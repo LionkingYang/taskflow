@@ -56,7 +56,7 @@ void run_without_json() {
   std::cout << "last res:" << f << std::endl;
 }
 
-// 使用json构建tu
+// 使用json构建图
 void run_with_json() {
   // 注册算子
   std::unordered_map<std::string, TaskFunc *> func_map;
