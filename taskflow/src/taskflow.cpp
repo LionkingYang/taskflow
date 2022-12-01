@@ -114,7 +114,7 @@ void TaskManager::BuildFromJson(
   for (const auto& each : jobs.tasks) {
     for (const auto& dep : each.dependencies) {
       if (auto iter = task_map.find(dep); iter != task_map.end()) {
-        task_map[each.task_name]->AddDependecy(iter->second.get());
+        task_map[each.task_name]->AddDependecy(iter->second);
       }
     }
   }

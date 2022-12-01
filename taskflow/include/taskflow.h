@@ -51,18 +51,22 @@ class Task {
 
   std::string GetTaskName() const { return task_name_; }
   int GetDependencyCount() const { return dependencies_.size(); }
-  std::vector<Task*> GetDependencies() const { return dependencies_; }
+  std::vector<std::shared_ptr<Task>> GetDependencies() const {
+    return dependencies_;
+  }
   TaskFunc* GetJob() { return job_; }
   bool GetFlag() { return in_progress_.load(); }
 
-  void AddDependecy(Task* task) { dependencies_.emplace_back(task); }
+  void AddDependecy(std::shared_ptr<Task> task) {
+    dependencies_.emplace_back(task);
+  }
   void SetFlag(bool flag) { in_progress_.store(flag); }
   void SetJob(TaskFunc* job) { job_ = job; }
 
  private:
   const std::string task_name_;
   TaskFunc* job_ = nullptr;
-  std::vector<Task*> dependencies_;
+  std::vector<std::shared_ptr<Task>> dependencies_;
   std::atomic<bool> in_progress_;
 };
 
