@@ -46,12 +46,14 @@
         {
             "task_name": "Policy",
             "dependencies": [
-                "RecallMerge"
+                "Rank"
             ]
         },
         {
             "task_name": "FillResponse",
-            "dependencies": []
+            "dependencies": [
+                "Policy"
+            ]
         }
     ]
 }

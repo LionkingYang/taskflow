@@ -824,8 +824,7 @@
 #define KCFG_FOR_EACH(what, ...) \
   KCFG_FOR_EACH_(KCFG_NARG_(__VA_ARGS__), what, __VA_ARGS__)
 
-#define BeginFunc(task_name) void func_##task_name(TaskContext* context) {
-#define EndFunc }
+#define BeginFunc(task_name) void func_##task_name(TaskContext* context)
 #define RegisterFunc(task_name)                                            \
   TaskFunc task_func##task_name = static_cast<TaskFunc>(func_##task_name); \
   func_map.emplace(#task_name, &task_func##task_name);

@@ -26,8 +26,8 @@ void run_with_json() {
       "\"RecallEMB\",\"dependencies\":[\"UU\",\"BlackList\"]},{\"task_name\":"
       "\"RecallMerge\",\"dependencies\":[\"RecallCB\",\"RecallEMB\"]},{\"task_"
       "name\":\"Rank\",\"dependencies\":[\"RecallMerge\"]},{\"task_name\":"
-      "\"Policy\",\"dependencies\":[\"RecallMerge\"]},{\"task_name\":"
-      "\"FillResponse\",\"dependencies\":[\"\"]}]}";
+      "\"Policy\",\"dependencies\":[\"Rank\"]},{\"task_name\":"
+      "\"FillResponse\",\"dependencies\":[\"Policy\"]}]}";
 
   // 初始化总的输入和输出
   RecmdRequest request;
