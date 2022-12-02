@@ -3,7 +3,7 @@
 # 使用拓扑排序检测项目是否存在.h文件的循环依赖
 # 需要python3.6.8及以上版本执行
 
-# usage: 
+# usage:
 #  1. python3 circle_reference_check.py
 #     输入项目在本地的绝对地址，如：/data/svn2/weishi_ips
 #  2. python3 circle_reference_check.py /data/svn2/weishi_ips
@@ -22,9 +22,9 @@ import time
 
 
 # 分析.h文件获取include, 只保留项目内依赖
-def find_header_dependencies(file: str, path:str):
+def find_header_dependencies(file: str, path: str):
     res = []
-    with open(file, "r", encoding = "ISO-8859-1") as f:
+    with open(file, "r", encoding="ISO-8859-1") as f:
         for each in f:
             if "#include" in each and each[0] == "#" and '"' in each:
                 ref_file = each.split('"')[1]
@@ -33,7 +33,8 @@ def find_header_dependencies(file: str, path:str):
                     res.append(os.path.abspath(path+"/"+ref_file))
                 # 使用相对路径的依赖
                 elif os.path.exists("/".join(file.split("/")[:-1])+"/"+ref_file):
-                    res.append(os.path.abspath("/".join(file.split("/")[:-1])+"/"+ref_file))
+                    res.append(os.path.abspath(
+                        "/".join(file.split("/")[:-1])+"/"+ref_file))
     return res
 
 
@@ -42,17 +43,17 @@ def find_all_header_files(path: str):
     res = []
     files = os.listdir(path)
     for file in files:
-       f = path+"/"+file
-       if not os.path.isdir(f):
-            if  ".h" in file:
+        f = path+"/"+file
+        if not os.path.isdir(f):
+            if ".h" in file:
                 res.append(os.path.abspath(path+"/"+file))
-       else:
+        else:
             res.extend(find_all_header_files(path+"/"+file))
     return res
 
 
 # 判断拓扑排序是否结束
-def is_over(dep_map:map, deleted:list) ->int:
+def is_over(dep_map: map, deleted: list) -> int:
     count = 0
     ret = []
     has_non_zero = False
@@ -71,9 +72,9 @@ def is_over(dep_map:map, deleted:list) ->int:
     return 0
 
 
-def judge_circular_reference(dep_map:map) -> int:
+def judge_circular_reference(dep_map: map) -> int:
     deleted = []
-    while True: 
+    while True:
         for each in dep_map:
             # 如果某个文件没有依赖，出列，并且所有依赖它的文件，依赖-1
             if len(dep_map[each]) == 0 and each not in deleted:
@@ -95,12 +96,13 @@ if __name__ == '__main__':
         path = input("输入项目的绝对地址:")
     if not os.path.exists(path):
         raise Exception("Project don't exist, check again please!")
-        
+
     header_files = find_all_header_files(path)
     # 抽取依赖关系
     dependency_map = {}
     for header_file in header_files:
-        dependency_map[header_file] = find_header_dependencies(header_file, path)
+        dependency_map[header_file] = find_header_dependencies(
+            header_file, path)
     # 拓扑排序判断是否存在环依赖
     if judge_circular_reference(dependency_map) == 1:
         print("Has circular reference")
