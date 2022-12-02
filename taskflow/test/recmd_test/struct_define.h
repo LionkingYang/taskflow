@@ -10,6 +10,8 @@ using std::vector;
 struct RecmdRequest {
   std::string personid;
   int count;
+
+  RecmdRequest() : count(0) {}
 };
 
 struct Feed {

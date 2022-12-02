@@ -14,7 +14,7 @@ bool TaskManager::Init() {
 
 void TaskManager::Run() {
   while (true) {
-    for (const auto task : tasks_) {
+    for (const auto &task : tasks_) {
       // 找出没有前置依赖并且还没执行的task
       if (dependency_map_[task->GetTaskName()] == 0 &&
           !map_finish_.find(task->GetTaskName()) && !task->GetFlag()) {
@@ -75,7 +75,7 @@ bool TaskManager::CircleCheck() {
   // 会判断依赖关系能否完全解耦，即所有任务都可以最终到达没有前置依赖的地步
   while (true) {
     bool found = false;
-    for (const auto task : tasks_) {
+    for (const auto &task : tasks_) {
       if (dependency_map[task->GetTaskName()] == 0 &&
           !map_finish.find(task->GetTaskName())) {
         for (auto each : dependend_map[task->GetTaskName()]) {

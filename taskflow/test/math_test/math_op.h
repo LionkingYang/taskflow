@@ -18,18 +18,21 @@ BeginFunc(a) {
   int res = Input(int) + 1;
   WriteToOutput(a, res, int);
 }
+EndFunc;
 
 BeginFunc(b) {
   ReadTaskOutput(a, int, res);
   res += 1;
   WriteToOutput(b, res, int);
 }
+EndFunc;
 
 BeginFunc(c) {
   ReadTaskOutput(a, int, res);
   res += 1;
   WriteToOutput(c, res, int);
 }
+EndFunc;
 
 BeginFunc(d) {
   ReadTaskOutput(b, int, res_b);
@@ -37,15 +40,18 @@ BeginFunc(d) {
   int res = res_b + res_c;
   WriteToOutput(d, res, int);
 }
+EndFunc;
 
 BeginFunc(e) {
-  ReadTaskOutput(d, double, res);
+  ReadTaskOutput(d, int, res);
   res += 1;
   WriteToOutput(e, res, int);
 }
+EndFunc;
 
 BeginFunc(f) {
   ReadTaskOutput(e, int, res);
   res += 1;
   WriteToFinalOutput(res, int);
 }
+EndFunc;

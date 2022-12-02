@@ -847,3 +847,5 @@
               << "'s output has error, check again:\n";                    \
   }                                                                        \
   type out = ReadTaskOutputUnsafe(task_name, type);
+
+#define EndFunc ;

@@ -15,6 +15,7 @@ BeginFunc(ParseRequest) {
   std::cout << "request personid:" << request.personid << std::endl;
   WriteToOutput(ParseRequest, request.personid, std::string);
 }
+EndFunc;
 
 BeginFunc(BlackList) {
   ReadTaskOutput(ParseRequest, std::string, personid);
@@ -24,6 +25,7 @@ BeginFunc(BlackList) {
   blacklist.black_posters.emplace("11111", 1);
   WriteToOutput(BlackList, blacklist, Blacklist);
 }
+EndFunc;
 
 BeginFunc(UU) {
   ReadTaskOutput(ParseRequest, std::string, personid);
@@ -42,6 +44,7 @@ BeginFunc(UU) {
   user.short_term_interest.emplace_back(std::move(interest));
   WriteToOutput(UU, user, UserInfo);
 }
+EndFunc;
 
 BeginFunc(RecallCB) {
   ReadTaskOutput(UU, UserInfo, user);
@@ -62,6 +65,7 @@ BeginFunc(RecallCB) {
   cb_result.recall_feeds.swap(recall_feeds);
   WriteToOutput(RecallCB, cb_result, RecallResult);
 }
+EndFunc;
 
 BeginFunc(RecallEMB) {
   ReadTaskOutput(UU, UserInfo, user);
@@ -82,6 +86,7 @@ BeginFunc(RecallEMB) {
   emb_result.recall_feeds.swap(recall_feeds);
   WriteToOutput(RecallEMB, emb_result, RecallResult);
 }
+EndFunc;
 
 BeginFunc(RecallMerge) {
   ReadTaskOutput(RecallCB, RecallResult, cb_result);
@@ -95,6 +100,7 @@ BeginFunc(RecallMerge) {
   }
   WriteToOutput(RecallMerge, merge_result, RecallResult);
 }
+EndFunc;
 
 BeginFunc(Rank) {
   ReadTaskOutput(RecallMerge, RecallResult, recall_result);
@@ -107,6 +113,7 @@ BeginFunc(Rank) {
   rank_result.rank_feeds.swap(recall_result.recall_feeds);
   WriteToOutput(Rank, rank_result, RankResult);
 }
+EndFunc;
 
 BeginFunc(Policy) {
   ReadTaskOutput(Rank, RankResult, rank_result);
@@ -117,6 +124,7 @@ BeginFunc(Policy) {
   policy_result.policy_feeds.swap(rank_result.rank_feeds);
   WriteToOutput(Policy, policy_result, PolicyResult);
 }
+EndFunc;
 
 BeginFunc(FillResponse) {
   ReadTaskOutput(Policy, PolicyResult, policy_result);
@@ -124,3 +132,4 @@ BeginFunc(FillResponse) {
   response.feeds_list.swap(policy_result.policy_feeds);
   WriteToFinalOutput(response, RecmdResponse);
 }
+EndFunc;
