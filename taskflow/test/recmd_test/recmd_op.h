@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "taskflow/include/taskflow.h"
@@ -16,7 +17,7 @@ BeginFunc(ParseRequest) {
 }
 
 BeginFunc(BlackList) {
-  std::string personid = ReadTaskOutput(ParseRequest, std::string);
+  ReadTaskOutput(ParseRequest, std::string, personid);
   Blacklist blacklist;
   blacklist.black_feeds.emplace("aaaaa", 1);
   blacklist.black_feeds.emplace("bbbbb", 1);
@@ -25,7 +26,7 @@ BeginFunc(BlackList) {
 }
 
 BeginFunc(UU) {
-  std::string personid = ReadTaskOutput(ParseRequest, std::string);
+  ReadTaskOutput(ParseRequest, std::string, personid);
   UserInfo user;
   user.age = 18;
   user.sex = 1;
@@ -43,12 +44,12 @@ BeginFunc(UU) {
 }
 
 BeginFunc(RecallCB) {
-  UserInfo user = ReadTaskOutput(UU, UserInfo);
-  Blacklist blacklist = ReadTaskOutput(BlackList, Blacklist);
+  ReadTaskOutput(UU, UserInfo, user);
+  ReadTaskOutput(BlackList, Blacklist, blacklist);
   vector<string> feeds = {"aaaaa", "ccccc", "eeeee"};
   vector<string> posters = {"11111", "33333", "55555"};
   vector<Feed> recall_feeds;
-  for (int i = 0; i < feeds.size(); i++) {
+  for (uint64_t i = 0; i < feeds.size(); i++) {
     if (!blacklist.black_feeds.count(feeds[i]) &&
         !blacklist.black_posters.count(posters[i])) {
       Feed feed;
@@ -63,12 +64,12 @@ BeginFunc(RecallCB) {
 }
 
 BeginFunc(RecallEMB) {
-  UserInfo user = ReadTaskOutput(UU, UserInfo);
-  Blacklist blacklist = ReadTaskOutput(BlackList, Blacklist);
+  ReadTaskOutput(UU, UserInfo, user);
+  ReadTaskOutput(BlackList, Blacklist, blacklist);
   vector<string> feeds = {"bbbbb", "ddddd", "fffff"};
   vector<string> posters = {"22222", "44444", "66666"};
   vector<Feed> recall_feeds;
-  for (int i = 0; i < feeds.size(); i++) {
+  for (uint64_t i = 0; i < feeds.size(); i++) {
     if (!blacklist.black_feeds.count(feeds[i]) &&
         !blacklist.black_posters.count(posters[i])) {
       Feed feed;
@@ -83,8 +84,8 @@ BeginFunc(RecallEMB) {
 }
 
 BeginFunc(RecallMerge) {
-  RecallResult cb_result = ReadTaskOutput(RecallCB, RecallResult);
-  RecallResult emb_result = ReadTaskOutput(RecallEMB, RecallResult);
+  ReadTaskOutput(RecallCB, RecallResult, cb_result);
+  ReadTaskOutput(RecallEMB, RecallResult, emb_result);
   RecallResult merge_result;
   for (const auto& each : emb_result.recall_feeds) {
     merge_result.recall_feeds.emplace_back(each);
@@ -96,7 +97,7 @@ BeginFunc(RecallMerge) {
 }
 
 BeginFunc(Rank) {
-  RecallResult recall_result = ReadTaskOutput(RecallMerge, RecallResult);
+  ReadTaskOutput(RecallMerge, RecallResult, recall_result);
   for (auto& each : recall_result.recall_feeds) {
     each.score_map.emplace("aa", random() % 10 / 10.0);
     each.score_map.emplace("bb", random() % 10 / 10.0);
@@ -108,7 +109,7 @@ BeginFunc(Rank) {
 }
 
 BeginFunc(Policy) {
-  RankResult rank_result = ReadTaskOutput(Rank, RankResult);
+  ReadTaskOutput(Rank, RankResult, rank_result);
   std::sort(
       rank_result.rank_feeds.begin(), rank_result.rank_feeds.end(),
       [](Feed f1, Feed f2) { return f1.score_map["aa"] > f2.score_map["aa"]; });
@@ -118,7 +119,7 @@ BeginFunc(Policy) {
 }
 
 BeginFunc(FillResponse) {
-  PolicyResult policy_result = ReadTaskOutput(Policy, PolicyResult);
+  ReadTaskOutput(Policy, PolicyResult, policy_result);
   RecmdResponse response;
   response.feeds_list.swap(policy_result.policy_feeds);
   WriteToFinalOutput(response, RecmdResponse);

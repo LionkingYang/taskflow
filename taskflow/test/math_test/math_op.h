@@ -20,26 +20,32 @@ BeginFunc(a) {
 }
 
 BeginFunc(b) {
-  int res = ReadTaskOutput(a, int) + 1;
+  ReadTaskOutput(a, int, res);
+  res += 1;
   WriteToOutput(b, res, int);
 }
 
 BeginFunc(c) {
-  int res = ReadTaskOutput(a, int) + 1;
+  ReadTaskOutput(a, int, res);
+  res += 1;
   WriteToOutput(c, res, int);
 }
 
 BeginFunc(d) {
-  int res = ReadTaskOutput(b, int) + ReadTaskOutput(c, int);
+  ReadTaskOutput(b, int, res_b);
+  ReadTaskOutput(c, int, res_c);
+  int res = res_b + res_c;
   WriteToOutput(d, res, int);
 }
 
 BeginFunc(e) {
-  int res = ReadTaskOutput(d, int) + 1;
+  ReadTaskOutput(d, double, res);
+  res += 1;
   WriteToOutput(e, res, int);
 }
 
 BeginFunc(f) {
-  int res = ReadTaskOutput(e, int) + 1;
+  ReadTaskOutput(e, int, res);
+  res += 1;
   WriteToFinalOutput(res, int);
 }

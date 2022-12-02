@@ -829,7 +829,7 @@
   TaskFunc task_func##task_name = static_cast<TaskFunc>(func_##task_name); \
   func_map.emplace(#task_name, &task_func##task_name);
 #define RegisterFuncs(...) KCFG_FOR_EACH(RegisterFunc, __VA_ARGS__)
-#define ReadTaskOutput(task_name, type) \
+#define ReadTaskOutputUnsafe(task_name, type) \
   std::any_cast<type>(context->task_output[KCFG_STRINGIZE2(task_name)])
 #define WriteTaskOutput(task_name, type) \
   context->task_output[KCFG_STRINGIZE2(task_name)]
@@ -839,9 +839,11 @@
 #define WriteToOutput(task_name, result, type) \
   WriteTaskOutput(task_name, type) = GetValue(type)(result);
 #define WriteToFinalOutput(result, type) FinalOutput = GetValue(type)(result);
-#define TryCast(task_name, type)                                           \
+#define ReadTaskOutput(task_name, type, out)                               \
   try {                                                                    \
     std::any_cast<type>(context->task_output[KCFG_STRINGIZE2(task_name)]); \
   } catch (const std::bad_any_cast& e) {                                   \
-    std::cout << KCFG_STRINGIZE2(task_name) << ":" << e.what() << '\n';    \
-  }
+    std::cout << "fetch task name:" << KCFG_STRINGIZE2(task_name)          \
+              << "'s output has error, check again:\n";                    \
+  }                                                                        \
+  type out = ReadTaskOutputUnsafe(task_name, type);
