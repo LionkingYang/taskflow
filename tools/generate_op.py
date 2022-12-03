@@ -47,8 +47,8 @@ def generate_one_op(op_name: str, dep_map: map, input_type: str, output_type: st
     if dep_map[op_name]["output"] == "1":
         op_str += "\tWriteToFinalOutput({}, $output_name);\n".format(output_type)
     else:
-        op_str += "\tWriteToOutput({}, ${}_output, {});\n".format(
-            op_name, op_name, dep_map[op_name]["type"] if len(dep_map[op_name]["type"]) > 0 else "$output_type")
+        op_str += "\tWriteToOutput({}, {}, ${}_output);\n".format(
+            op_name, dep_map[op_name]["type"] if len(dep_map[op_name]["type"]) > 0 else "$output_type", op_name)
 
     op_str += "}\nEndFunc;"
     return op_str
