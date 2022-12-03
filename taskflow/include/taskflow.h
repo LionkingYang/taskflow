@@ -39,69 +39,82 @@ struct TaskContext {
   TaskContext(const std::any& input, std::any* output)
       : global_input(input), global_output(output) {}
 };
-using TaskFunc = std::function<void(TaskContext*)>;
 
+class Task;
+using TaskFunc = std::function<void(TaskContext*)>;
+using TaskPtr = std::shared_ptr<Task>;
 class Task {
  public:
   explicit Task(const std::string& task_name) : task_name_(task_name) {}
   Task(std::string task_name, TaskFunc* job)
-      : task_name_(task_name), job_(job), in_progress_(false) {}
+      : task_name_(task_name), job_(job) {}
 
   std::string GetTaskName() const { return task_name_; }
   int GetDependencyCount() const { return dependencies_.size(); }
-  std::vector<std::shared_ptr<Task>> GetDependencies() const {
-    return dependencies_;
-  }
+  std::vector<TaskPtr> GetDependencies() const { return dependencies_; }
   TaskFunc* GetJob() { return job_; }
-  bool GetFlag() { return in_progress_.load(); }
 
-  void AddDependecy(std::shared_ptr<Task> task) {
-    dependencies_.emplace_back(task);
-  }
-  void SetFlag(bool flag) { in_progress_.store(flag); }
+  void AddDependecy(TaskPtr task) { dependencies_.emplace_back(task); }
   void SetJob(TaskFunc* job) { job_ = job; }
 
  private:
   const std::string task_name_;
   TaskFunc* job_ = nullptr;
-  std::vector<std::shared_ptr<Task>> dependencies_;
-  std::atomic<bool> in_progress_;
+  std::vector<TaskPtr> dependencies_;
+};
+
+class Graph {
+ public:
+  explicit Graph(const std::string& graph_string,
+                 std::unordered_map<std::string, TaskFunc*>* func_map) {
+    BuildFromJson(graph_string, func_map);
+    BuildDependencyMap();
+  }
+  const taskflow::ConcurrentMap<string, std::vector<TaskPtr>>*
+  GetDependendMap() {
+    return &dependend_map_;
+  }
+  const taskflow::ConcurrentMap<string, int> GetDependencyMap() {
+    return dependency_map_;
+  }
+
+  const std::vector<TaskPtr> GetTasks() { return tasks_; }
+
+  bool CircleCheck();
+
+ private:
+  void BuildDependencyMap();
+  void BuildFromJson(const std::string& graph_string,
+                     std::unordered_map<std::string, TaskFunc*>* func_map);
+
+ private:
+  taskflow::ConcurrentMap<string, int> dependency_map_;
+  taskflow::ConcurrentMap<string, std::vector<TaskPtr>> dependend_map_;
+  taskflow::ConcurrentMap<string, int> map_finish_;
+  std::vector<TaskPtr> tasks_;
 };
 
 class TaskManager {
  public:
   // 使用已经建立好依赖关系的tasks列表进行初始化
-  explicit TaskManager(std::vector<std::shared_ptr<Task>> tasks,
-                       const std::any& input, std::any* output,
-                       int worker_nums = 4)
+  explicit TaskManager(std::shared_ptr<Graph> graph, const std::any& input,
+                       std::any* output, int worker_nums = 4)
       : worker_nums_(worker_nums),
-        tasks_(tasks),
-        input_context_(std::make_shared<TaskContext>(input, output)) {}
-  // 使用json文件进行初始化
-  TaskManager(const std::string& graph_string,
-              std::unordered_map<std::string, TaskFunc*>* func_map,
-              const std::any& input, std::any* output)
-      : worker_nums_(4),
+        graph_(graph),
         input_context_(std::make_shared<TaskContext>(input, output)) {
-    BuildFromJson(graph_string, func_map);
+    dependency_map_ = graph_->GetDependencyMap();
   }
 
-  bool Init();
+  void Init();
   void Run();
   void Clear();
 
  private:
-  void BuildDependencyMap();
-  bool CircleCheck();
-  void BuildFromJson(const std::string& graph_string,
-                     std::unordered_map<std::string, TaskFunc*>* func_map);
-
- private:
   uint64_t worker_nums_;
-  std::vector<std::shared_ptr<Task>> tasks_;
   taskflow::ConcurrentMap<string, int> dependency_map_;
-  taskflow::ConcurrentMap<string, std::vector<Task*>> dependend_map_;
+  std::shared_ptr<Graph> graph_;
   std::vector<std::shared_ptr<taskflow::TaskWorker>> workers_;
   taskflow::ConcurrentMap<string, int> map_finish_;
+  taskflow::ConcurrentMap<string, int> map_in_progress_;
   std::shared_ptr<TaskContext> input_context_;
 };

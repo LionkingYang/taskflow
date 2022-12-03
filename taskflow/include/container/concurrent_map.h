@@ -33,7 +33,7 @@ class ConcurrentMap {
   }
 
   // 查找操作，返回key是否存在(true or false)
-  bool find(const K& k) {
+  bool find(const K& k) const {
     const_accessor cac;
     return table_.find(cac, k);
   }
@@ -64,7 +64,7 @@ class ConcurrentMap {
   }
 
   // 类似map的at方法，需要先判断key是否存在，否则会拿到不可预料的结果
-  const V& at(const K& k) {
+  const V& at(const K& k) const {
     const_accessor cac;
     table_.find(cac, k);
     return cac->second;

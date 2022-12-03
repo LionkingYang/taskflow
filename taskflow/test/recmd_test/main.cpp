@@ -18,38 +18,45 @@ void run_with_json() {
 
   // json格式的算子组织方式
   std::string s =
-      "{\"tasks\":[{\"task_name\":\"ParseRequest\",\"dependencies\":[]},{"
-      "\"task_"
-      "name\":\"UU\",\"dependencies\":[\"ParseRequest\"]},{\"task_name\":"
-      "\"BlackList\",\"dependencies\":[\"ParseRequest\"]},{\"task_name\":"
-      "\"RecallCB\",\"dependencies\":[\"UU\",\"BlackList\"]},{\"task_name\":"
-      "\"RecallEMB\",\"dependencies\":[\"UU\",\"BlackList\"]},{\"task_name\":"
-      "\"RecallMerge\",\"dependencies\":[\"RecallCB\",\"RecallEMB\"]},{\"task_"
-      "name\":\"Rank\",\"dependencies\":[\"RecallMerge\"]},{\"task_name\":"
-      "\"Policy\",\"dependencies\":[\"Rank\"]},{\"task_name\":"
-      "\"FillResponse\",\"dependencies\":[\"Policy\"]}]}";
-
-  // 初始化总的输入和输出
-  RecmdRequest request;
-  request.personid = "99999";
-  RecmdResponse response;
-  auto input = std::any(request);
-  auto output = std::any(response);
+      "{\"input_type\":\"RecmdRequest\",\"output_type\":\"RecmdResponse\","
+      "\"tasks\":[{\"task_name\":\"ParseRequest\",\"dependencies\":[],\"type\":"
+      "\"string\",\"use_input\":\"1\"},{\"task_name\":\"UU\",\"dependencies\":["
+      "\"ParseRequest\"],\"type\":\"UserInfo\"},{\"task_name\":\"BlackList\","
+      "\"dependencies\":[\"ParseRequest\"],\"type\":\"Blacklist\"},{\"task_"
+      "name\":\"RecallCB\",\"dependencies\":[\"UU\",\"BlackList\"],\"type\":"
+      "\"RecallResult\"},{\"task_name\":\"RecallEMB\",\"dependencies\":[\"UU\","
+      "\"BlackList\"],\"type\":\"RecallResult\"},{\"task_name\":"
+      "\"RecallMerge\",\"dependencies\":[\"RecallCB\",\"RecallEMB\"],\"type\":"
+      "\"RecallResult\"},{\"task_name\":\"Rank\",\"dependencies\":["
+      "\"RecallMerge\"],\"type\":\"RankResult\"},{\"task_name\":\"Policy\","
+      "\"dependencies\":[\"Rank\"],\"type\":\"PolicyResult\"},{\"task_name\":"
+      "\"FillResponse\",\"dependencies\":[\"Policy\"],\"final_output\":\"1\"}]"
+      "}";
 
   // manager进行图运算，从json获取图组织方式
-  TaskManager manager(s, &func_map, input, &output);
-  if (!manager.Init()) {
+  std::shared_ptr<Graph> graph = std::make_shared<Graph>(s, &func_map);
+  if (graph->CircleCheck()) {
     std::cout << "Has circle dependence, check again!" << std::endl;
   } else {
-    manager.Run();
-  }
-  manager.Clear();
-
-  // 打印最终的输出结果
-  response = std::any_cast<RecmdResponse>(output);
-  for (const auto &each : response.feeds_list) {
-    std::cout << each.feedid << ":" << each.posterid << ":"
-              << each.score_map.at("aa") << std::endl;
+    for (int i = 0; i < 10; i++) {
+      // 初始化总的输入和输出
+      RecmdRequest request;
+      request.personid = "99999";
+      RecmdResponse response;
+      auto input = std::any(request);
+      auto output = std::any(response);
+      // manager进行图运算，从json获取图组织方式
+      TaskManager manager(graph, input, &output);
+      manager.Init();
+      manager.Run();
+      manager.Clear();
+      // 打印最终的输出结果
+      response = std::any_cast<RecmdResponse>(output);
+      for (const auto &each : response.feeds_list) {
+        std::cout << each.feedid << ":" << each.posterid << ":"
+                  << each.score_map.at("aa") << std::endl;
+      }
+    }
   }
 }
 
