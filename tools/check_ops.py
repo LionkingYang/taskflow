@@ -19,7 +19,11 @@ def parse_json_tasks(path: str) -> map:
 def build_depedency_map(tasks: map) -> map:
     dep_map = {}
     for task in tasks["tasks"]:
-        dep_map[task["task_name"]] = task["dependencies"]
+        t = {}
+        t["depedencies"] = task["dependencies"]
+        if "type" in task:
+            t["type"] = task["type"]
+        dep_map[task["task_name"]] = t
     return dep_map
 
 
@@ -35,7 +39,7 @@ def parse_op(op: str) -> list:
         if (len(params) != 3):
             raise Exception(
                 "{} has wrong number of read op input params".format(op_name))
-        input.append(each.split(",")[0])
+        input.append([each.split(",")[1].strip(), each.split(",")[0].strip()])
     output = re.findall(r"WriteToOutput\((.*)\)", op)
     if len(output) == 0:
         if "WriteToFinalOutput" not in op:
@@ -50,7 +54,7 @@ def parse_op(op: str) -> list:
         if out[0] != op_name:
             raise Exception(
                 "{} output op name is not equal to task op name".format(op_name))
-        return [op_name, input, [out[0]]]
+        return [op_name, input]
     return [op_name, input]
 
 
@@ -85,8 +89,17 @@ def check_if_legal(ops, dep_map):
             raise Exception("{}算子在json里面没有定义".format(op[0]))
         deps = dep_map[op[0]]
         for each in op[1]:
-            if each not in deps:
-                raise Exception("{} 算子依赖的 {}不在json设置的依赖里".format(op[0], each))
+            if each[1] not in deps["depedencies"]:
+                raise Exception(
+                    "{} 算子依赖的 {}不在json设置的依赖里".format(op[0], each[1]))
+            if len(each[0]) > 0 and "type" in dep_map[each[1]]:
+                left = dep_map[each[1]]["type"]
+                right = each[0]
+                left = left.split("::")[-1] if "::" in left else left
+                right = right.split("::")[-1] if "::" in right else right
+                if left != right:
+                    raise Exception(
+                        "{} 算子中使用{}算子的输入类型和json不一致".format(op[0], each[1]))
 
 
 if __name__ == "__main__":

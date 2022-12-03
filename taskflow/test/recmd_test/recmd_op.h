@@ -11,9 +11,9 @@
 #include "taskflow/test/recmd_test/struct_define.h"
 
 BeginFunc(ParseRequest) {
-  RecmdRequest request = Input(RecmdRequest);
+  GetGlobalInput(RecmdRequest, request);
   std::cout << "request personid:" << request.personid << std::endl;
-  WriteToOutput(ParseRequest, request.personid, std::string);
+  WriteToOutput(ParseRequest, std::string, request.personid);
 }
 EndFunc
 
@@ -23,7 +23,7 @@ BeginFunc(BlackList) {
   blacklist.black_feeds.emplace("aaaaa", 1);
   blacklist.black_feeds.emplace("bbbbb", 1);
   blacklist.black_posters.emplace("11111", 1);
-  WriteToOutput(BlackList, blacklist, Blacklist);
+  WriteToOutput(BlackList, Blacklist, blacklist);
 }
 EndFunc
 
@@ -42,7 +42,7 @@ BeginFunc(UU) {
   interest2.score = 0.7;
   interest2.tag = "comedy";
   user.short_term_interest.emplace_back(std::move(interest));
-  WriteToOutput(UU, user, UserInfo);
+  WriteToOutput(UU, UserInfo, user);
 }
 EndFunc
 
@@ -63,7 +63,7 @@ BeginFunc(RecallCB) {
   }
   RecallResult cb_result;
   cb_result.recall_feeds.swap(recall_feeds);
-  WriteToOutput(RecallCB, cb_result, RecallResult);
+  WriteToOutput(RecallCB, RecallResult, cb_result);
 }
 EndFunc
 
@@ -84,7 +84,7 @@ BeginFunc(RecallEMB) {
   }
   RecallResult emb_result;
   emb_result.recall_feeds.swap(recall_feeds);
-  WriteToOutput(RecallEMB, emb_result, RecallResult);
+  WriteToOutput(RecallEMB, RecallResult, emb_result);
 }
 EndFunc
 
@@ -98,7 +98,7 @@ BeginFunc(RecallMerge) {
   for (const auto& each : cb_result.recall_feeds) {
     merge_result.recall_feeds.emplace_back(each);
   }
-  WriteToOutput(RecallMerge, merge_result, RecallResult);
+  WriteToOutput(RecallMerge, RecallResult, merge_result);
 }
 EndFunc
 
@@ -111,7 +111,7 @@ BeginFunc(Rank) {
   }
   RankResult rank_result;
   rank_result.rank_feeds.swap(recall_result.recall_feeds);
-  WriteToOutput(Rank, rank_result, RankResult);
+  WriteToOutput(Rank, RankResult, rank_result);
 }
 EndFunc
 
@@ -122,7 +122,7 @@ BeginFunc(Policy) {
       [](Feed f1, Feed f2) { return f1.score_map["aa"] > f2.score_map["aa"]; });
   PolicyResult policy_result;
   policy_result.policy_feeds.swap(rank_result.rank_feeds);
-  WriteToOutput(Policy, policy_result, PolicyResult);
+  WriteToOutput(Policy, PolicyResult, policy_result);
 }
 EndFunc
 
@@ -130,6 +130,6 @@ BeginFunc(FillResponse) {
   ReadTaskOutput(Policy, PolicyResult, policy_result);
   RecmdResponse response;
   response.feeds_list.swap(policy_result.policy_feeds);
-  WriteToFinalOutput(response, RecmdResponse);
+  WriteToFinalOutput(RecmdResponse, response);
 }
 EndFunc

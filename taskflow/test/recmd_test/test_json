@@ -1,59 +1,71 @@
 {
+    "input_type": "RecmdRequest",
+    "output_type": "RecmdResponse",
     "tasks": [
         {
             "task_name": "ParseRequest",
-            "dependencies": []
+            "dependencies": [],
+            "type": "string",
+            "use_input": "1"
         },
         {
             "task_name": "UU",
             "dependencies": [
                 "ParseRequest"
-            ]
+            ],
+            "type": "UserInfo"
         },
         {
             "task_name": "BlackList",
             "dependencies": [
                 "ParseRequest"
-            ]
+            ],
+            "type": "Blacklist"
         },
         {
             "task_name": "RecallCB",
             "dependencies": [
                 "UU",
                 "BlackList"
-            ]
+            ],
+            "type": "RecallResult"
         },
         {
             "task_name": "RecallEMB",
             "dependencies": [
                 "UU",
                 "BlackList"
-            ]
+            ],
+            "type": "RecallResult"
         },
         {
             "task_name": "RecallMerge",
             "dependencies": [
                 "RecallCB",
                 "RecallEMB"
-            ]
+            ],
+            "type": "RecallResult"
         },
         {
             "task_name": "Rank",
             "dependencies": [
                 "RecallMerge"
-            ]
+            ],
+            "type": "RankResult"
         },
         {
             "task_name": "Policy",
             "dependencies": [
                 "Rank"
-            ]
+            ],
+            "type": "PolicyResult"
         },
         {
             "task_name": "FillResponse",
             "dependencies": [
                 "Policy"
-            ]
+            ],
+            "final_output": "1"
         }
     ]
 }

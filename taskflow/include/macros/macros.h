@@ -836,9 +836,9 @@
 #define FinalOutput *(context->global_output)
 #define Input(type) std::any_cast<type>(context->global_input)
 #define GetValue(type) std::make_any<type>
-#define WriteToOutput(task_name, result, type) \
+#define WriteToOutput(task_name, type, result) \
   WriteTaskOutput(task_name, type) = GetValue(type)(result);
-#define WriteToFinalOutput(result, type) FinalOutput = GetValue(type)(result);
+#define WriteToFinalOutput(type, result) FinalOutput = GetValue(type)(result);
 #define ReadTaskOutput(task_name, type, out)                               \
   try {                                                                    \
     std::any_cast<type>(context->task_output[KCFG_STRINGIZE2(task_name)]); \
@@ -849,3 +849,5 @@
   type out = ReadTaskOutputUnsafe(task_name, type);
 
 #define EndFunc ;
+
+#define GetGlobalInput(type, res) type res = Input(type);
