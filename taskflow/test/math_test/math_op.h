@@ -46,6 +46,7 @@ EndFunc;
 
 BeginFunc(f) {
   ReadTaskOutput(e, int, res);
+  res += 1;
   WriteToFinalOutput(int, res);
 }
 EndFunc;

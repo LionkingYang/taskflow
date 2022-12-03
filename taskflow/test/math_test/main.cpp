@@ -9,10 +9,10 @@
 #include "taskflow/include/taskflow.h"
 #include "taskflow/test/math_test/math_op.h"
 
-// 不使用json，手动构建图
+// 不使用json，手动构建图，不推荐
 void run_without_json() {
   int a = 0, b = 0, c = 0, d = 0, e = 0, f = 0;
-  TaskFunc func_a = [&](TaskContext *context) { a += Input(int); };
+  TaskFunc func_a = [&](TaskContext *context) { a += Input(int) + 1; };
   TaskFunc func_b = [&](TaskContext *) { b += a + 1; };
   TaskFunc func_c = [&](TaskContext *) { c += a + 1; };
   TaskFunc func_d = [&](TaskContext *) { d = b + c; };
