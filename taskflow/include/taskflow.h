@@ -105,9 +105,12 @@ class TaskManager {
     dependency_map_ = graph_->GetDependencyMap();
   }
 
-  void Init();
   void Run();
+  ~TaskManager() { Clear(); }
+
+ private:
   void Clear();
+  void Init();
 
  private:
   uint64_t worker_nums_;

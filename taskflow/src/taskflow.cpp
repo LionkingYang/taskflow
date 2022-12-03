@@ -8,6 +8,7 @@ void TaskManager::Init() {
 }
 
 void TaskManager::Run() {
+  Init();
   while (true) {
     for (const auto& task : graph_->GetTasks()) {
       // 找出没有前置依赖并且还没执行的task
@@ -97,10 +98,10 @@ bool Graph::CircleCheck() {
 
 // 从json字符串中构建tasks
 void Graph::BuildFromJson(
-    const std::string& graph_string,
+    const std::string& json_path,
     std::unordered_map<std::string, TaskFunc*>* func_map) {
   Jobs jobs;
-  kcfg::ParseFromJsonString(graph_string, jobs);
+  kcfg::ParseFromJsonFile(json_path, jobs);
   std::unordered_map<std::string, TaskPtr> task_map;
   // 遍历一遍，拿到task列表
   for (const auto& each : jobs.tasks) {
