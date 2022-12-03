@@ -1,0 +1,34 @@
+{
+    "input_type": "int",
+    "output_type": "int",
+    "tasks": [
+        {
+            "task_name": "a",
+            "dependencies": [],
+            "type": "int",
+            "use_input": "1"
+        },
+        {
+            "task_name": "b",
+            "dependencies": [
+                "a"
+            ],
+            "type": "int"
+        },
+        {
+            "task_name": "c",
+            "dependencies": [
+                "a"
+            ],
+            "type": "int"
+        },
+        {
+            "task_name": "d",
+            "dependencies": [
+                "b",
+                "c"
+            ],
+            "final_output": "1"
+        }
+    ]
+}

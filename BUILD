@@ -12,8 +12,8 @@ cc_binary(
 cc_binary(
     name = "generate_test",
     srcs = [
-        "taskflow/test/generate_test/main.cpp",
-        "taskflow/test/generate_test/test_op.h",
+        "taskflow/test/generate_test/project_main.cpp",
+        "taskflow/test/generate_test/project_op.h",
     ],
     deps = ["//:task_flow_dep"],
 )
