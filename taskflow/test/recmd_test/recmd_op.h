@@ -10,6 +10,11 @@
 #include "taskflow/include/taskflow.h"
 #include "taskflow/test/recmd_test/struct_define.h"
 
+using taskflow::Graph;
+using taskflow::TaskContext;
+using taskflow::TaskFunc;
+using taskflow::TaskManager;
+
 BeginFunc(ParseRequest) {
   GetGlobalInput(RecmdRequest, request);
   std::cout << "request personid:" << request.personid << std::endl;

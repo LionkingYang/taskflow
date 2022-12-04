@@ -1,5 +1,9 @@
 #include "taskflow/include/taskflow.h"
 
+using std::string;
+using std::unordered_map;
+using std::vector;
+
 namespace taskflow {
 void TaskManager::Init() {
   // 打开workers
@@ -59,7 +63,7 @@ void Graph::BuildDependencyMap() {
         dependend_map_[dependency->GetTaskName()].emplace_back(task);
 
       } else {
-        std::vector<TaskPtr> vec;
+        vector<TaskPtr> vec;
         vec.emplace_back(task);
         dependend_map_.emplace(dependency->GetTaskName(), vec);
       }
@@ -98,12 +102,11 @@ bool Graph::CircleCheck() {
 }
 
 // 从json字符串中构建tasks
-void Graph::BuildFromJson(
-    const std::string& json_path,
-    std::unordered_map<std::string, TaskFunc*>* func_map) {
+void Graph::BuildFromJson(const string& json_path,
+                          unordered_map<string, TaskFunc*>* func_map) {
   Jobs jobs;
   kcfg::ParseFromJsonFile(json_path, jobs);
-  std::unordered_map<std::string, TaskPtr> task_map;
+  unordered_map<string, TaskPtr> task_map;
   // 遍历一遍，拿到task列表
   for (const auto& each : jobs.tasks) {
     TaskPtr A =
