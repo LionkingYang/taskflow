@@ -1,3 +1,7 @@
+// Copyright (c) 2022 liontyang<yangtian024@163.com> All rights reserved.
+// Licensed under the Apache License. See License file in the project root for
+// license information.
+
 #include "taskflow/include/taskflow.h"
 
 using std::string;
@@ -5,15 +9,8 @@ using std::unordered_map;
 using std::vector;
 
 namespace taskflow {
-void TaskManager::Init() {
-  // 打开workers
-  while (workers_.size() < worker_nums_) {
-    workers_.push_back(std::make_shared<taskflow::TaskWorker>());
-  }
-}
 
 void TaskManager::Run() {
-  Init();
   while (true) {
     for (const auto& task : graph_->GetTasks()) {
       // 找出没有前置依赖并且还没执行的task
@@ -39,9 +36,7 @@ void TaskManager::Run() {
           map_finish_.emplace(task->GetTaskName(), 1);
         };
         // 随机选取worker执行task
-        uint32_t cursor = random() % workers_.size();
-        auto worker = workers_[cursor];
-        worker->Post(t, false);
+        work_manager_->Execute(t);
       }
     }
     // 任务全部完成，退出

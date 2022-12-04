@@ -71,6 +71,9 @@ if __name__ == "__main__":
     input_type = "$input_type" if "input_type" not in tasks else tasks["input_type"]
     output_type = "$output_type" if "output_type" not in tasks else tasks["output_type"]
     op_content = """
+// Copyright (c) 2022 liontyang<yangtian024@163.com> All rights reserved.
+// Licensed under the Apache License. See License file in the project root for
+// license information.
 #pragma once
 #include <any>
 #include <iostream>

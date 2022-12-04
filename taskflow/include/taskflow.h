@@ -1,3 +1,7 @@
+// Copyright (c) 2022 liontyang<yangtian024@163.com> All rights reserved.
+// Licensed under the Apache License. See License file in the project root for
+// license information.
+
 #pragma once
 #include <unistd.h>
 
@@ -6,17 +10,14 @@
 #include <functional>
 #include <iostream>
 #include <memory>
-#include <ostream>
-#include <queue>
 #include <string>
-#include <thread>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "taskflow/include/async_task/async_task.h"
+#include "taskflow/include/async_task/work_manager.h"
+#include "taskflow/include/common_struct/task_struct.h"
 #include "taskflow/include/container/concurrent_map.h"
-#include "taskflow/include/kcfg/kcfg.h"
 #include "taskflow/include/macros/macros.h"
 
 using std::string;
@@ -24,16 +25,6 @@ using std::unordered_map;
 using std::vector;
 
 namespace taskflow {
-struct Job {
-  string task_name;
-  vector<string> dependencies;
-  KCFG_DEFINE_FIELDS(task_name, dependencies)
-};
-
-struct Jobs {
-  vector<Job> tasks;
-  KCFG_DEFINE_FIELDS(tasks)
-};
 
 struct TaskContext {
   const std::any global_input;
@@ -99,8 +90,8 @@ class TaskManager {
  public:
   // 使用已经建立好依赖关系的tasks列表进行初始化
   explicit TaskManager(std::shared_ptr<Graph> graph, const std::any& input,
-                       std::any* output, int worker_nums = 4)
-      : worker_nums_(worker_nums),
+                       std::any* output, uint64_t worker_nums = 4)
+      : work_manager_(std::make_shared<taskflow::WorkManager>(4)),
         graph_(graph),
         input_context_(std::make_shared<TaskContext>(input, output)) {
     dependency_map_ = graph_->GetDependencyMap();
@@ -111,13 +102,11 @@ class TaskManager {
 
  private:
   void Clear();
-  void Init();
 
  private:
-  uint64_t worker_nums_;
+  std::shared_ptr<taskflow::WorkManager> work_manager_;
   taskflow::ConcurrentMap<string, int> dependency_map_;
   std::shared_ptr<Graph> graph_;
-  vector<std::shared_ptr<taskflow::TaskWorker>> workers_;
   taskflow::ConcurrentMap<string, int> map_finish_;
   taskflow::ConcurrentMap<string, int> map_in_progress_;
   std::shared_ptr<TaskContext> input_context_;

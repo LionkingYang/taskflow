@@ -1,3 +1,6 @@
+// Copyright (c) 2022 liontyang<yangtian024@163.com> All rights reserved.
+// Licensed under the Apache License. See License file in the project root for
+// license information.
 #pragma once
 #define KCFG_STRINGIZE(arg) KCFG_STRINGIZE1(arg)
 #define KCFG_STRINGIZE1(arg) KCFG_STRINGIZE2(arg)

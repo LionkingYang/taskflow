@@ -9,14 +9,14 @@ cc_binary(
     deps = ["//:task_flow_dep"],
 )
 
-cc_binary(
-    name = "generate_test",
-    srcs = [
-        "taskflow/test/generate_test/project_main.cpp",
-        "taskflow/test/generate_test/project_op.h",
-    ],
-    deps = ["//:task_flow_dep"],
-)
+# cc_binary(
+#     name = "generate_test",
+#     srcs = [
+#         "taskflow/test/generate_test/project_main.cpp",
+#         "taskflow/test/generate_test/project_op.h",
+#     ],
+#     deps = ["//:task_flow_dep"],
+# )
 
 cc_binary(
     name = "recmd_test",
