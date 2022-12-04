@@ -3,8 +3,8 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 cc_binary(
     name = "math_test",
     srcs = [
-        "taskflow/test/math_test/main.cpp",
-        "taskflow/test/math_test/math_op.h",
+        "test/math_test/main.cpp",
+        "test/math_test/math_op.h",
     ],
     deps = ["//:task_flow_dep"],
 )
@@ -12,8 +12,8 @@ cc_binary(
 # cc_binary(
 #     name = "generate_test",
 #     srcs = [
-#         "taskflow/test/generate_test/project_main.cpp",
-#         "taskflow/test/generate_test/project_op.h",
+#         "test/generate_test/project_main.cpp",
+#         "test/generate_test/project_op.h",
 #     ],
 #     deps = ["//:task_flow_dep"],
 # )
@@ -21,21 +21,23 @@ cc_binary(
 cc_binary(
     name = "recmd_test",
     srcs = [
-        "taskflow/test/recmd_test/main.cpp",
-        "taskflow/test/recmd_test/recmd_op.h",
-        "taskflow/test/recmd_test/struct_define.h",
+        "test/recmd_test/main.cpp",
+        "test/recmd_test/recmd_op.h",
+        "test/recmd_test/struct_define.h",
     ],
     deps = ["//:task_flow_dep"],
 )
 
 cc_library(
     name = "task_flow_dep",
-    srcs = glob(["taskflow/src/**/*.cpp"]),
+    srcs = glob(["src/**/*.cpp"]),
     hdrs = glob(["taskflow/include/**/*.h"]),
     linkopts = [
         "-lpthread",
     ],
     deps = [
+        "@com_github_fmtlib_fmt",
+        "@com_github_spdlog",
         "@oneTBB//:tbb",
         "@rapidJson//:rapidjson",
     ],
