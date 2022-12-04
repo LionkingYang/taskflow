@@ -8,6 +8,11 @@
 
 #include "taskflow/include/taskflow.h"
 
+using taskflow::Graph;
+using taskflow::TaskContext;
+using taskflow::TaskFunc;
+using taskflow::TaskManager;
+
 BeginFunc(a) {
   GetGlobalInput(int, res);
   res += 1;

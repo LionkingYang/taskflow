@@ -9,6 +9,11 @@
 #include "taskflow/test/recmd_test/recmd_op.h"
 #include "taskflow/test/recmd_test/struct_define.h"
 
+using taskflow::Graph;
+using taskflow::TaskContext;
+using taskflow::TaskFunc;
+using taskflow::TaskManager;
+
 // 使用json构建图
 void RunGraph() {
   // 注册算子

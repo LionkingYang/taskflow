@@ -1,5 +1,6 @@
 #include "taskflow/include/taskflow.h"
 
+namespace taskflow {
 void TaskManager::Init() {
   // 打开workers
   while (workers_.size() < worker_nums_) {
@@ -124,3 +125,4 @@ void TaskManager::Clear() {
   dependency_map_.clear();
   map_finish_.clear();
 }
+}  // namespace taskflow

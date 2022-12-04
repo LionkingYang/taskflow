@@ -21,6 +21,7 @@
 
 using std::string;
 
+namespace taskflow {
 struct Job {
   std::string task_name;
   std::vector<string> dependencies;
@@ -121,3 +122,4 @@ class TaskManager {
   taskflow::ConcurrentMap<string, int> map_in_progress_;
   std::shared_ptr<TaskContext> input_context_;
 };
+}  // namespace taskflow

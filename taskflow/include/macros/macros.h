@@ -825,8 +825,9 @@
   KCFG_FOR_EACH_(KCFG_NARG_(__VA_ARGS__), what, __VA_ARGS__)
 
 #define BeginFunc(task_name) void func_##task_name(TaskContext* context)
-#define RegisterFunc(task_name)                                            \
-  TaskFunc task_func##task_name = static_cast<TaskFunc>(func_##task_name); \
+#define RegisterFunc(task_name)                          \
+  taskflow::TaskFunc task_func##task_name =              \
+      static_cast<taskflow::TaskFunc>(func_##task_name); \
   func_map.emplace(#task_name, &task_func##task_name);
 #define RegisterFuncs(...) KCFG_FOR_EACH(RegisterFunc, __VA_ARGS__)
 #define ReadTaskOutputUnsafe(task_name, type) \
@@ -850,4 +851,10 @@
 
 #define EndFunc ;
 
-#define GetGlobalInput(type, res) type res = Input(type);
+#define GetGlobalInput(type, res)                                          \
+  try {                                                                    \
+    Input(type);                                                           \
+  } catch (const std::bad_any_cast& e) {                                   \
+    std::cout << "fetch global input has error, the type dosen't match\n"; \
+  }                                                                        \
+  type res = Input(type);

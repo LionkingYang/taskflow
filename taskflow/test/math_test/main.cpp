@@ -9,6 +9,11 @@
 #include "taskflow/include/taskflow.h"
 #include "taskflow/test/math_test/math_op.h"
 
+using taskflow::Graph;
+using taskflow::TaskContext;
+using taskflow::TaskFunc;
+using taskflow::TaskManager;
+
 // 使用json构建图
 void RunGraph() {
   // 注册算子
