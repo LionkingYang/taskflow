@@ -39,6 +39,7 @@ if __name__ == "__main__":
 #include <unordered_map>
 #include <vector>
 
+#include "taskflow/include/container/pool.h"
 #include "taskflow/include/kcfg/kcfg.h"
 #include "taskflow/include/macros/macros.h"
 #include "taskflow/include/taskflow.h"
@@ -68,8 +69,8 @@ void RunGraph() {{
   if (graph->CircleCheck()) {{
     std::cout << "Has circle dependence, check again!" << std::endl;
   }} else {{
-    // manager进行图运算，从json获取图组织方式
-    TaskManager manager(graph, input, &output);
+    GET_POOL_OBJ(taskflow::TaskManager, manager);
+    manager.Init(graph, input, &output);
     manager.Run();
   }}
   // fetch your output here
