@@ -89,18 +89,12 @@ class Graph {
 class TaskManager {
  public:
   // 使用已经建立好依赖关系的tasks列表进行初始化
-  explicit TaskManager(std::shared_ptr<Graph> graph, const std::any& input,
-                       std::any* output, uint64_t worker_nums = 4)
-      : work_manager_(std::make_shared<taskflow::WorkManager>(4)),
-        graph_(graph),
-        input_context_(std::make_shared<TaskContext>(input, output)) {
-    dependency_map_ = graph_->GetDependencyMap();
-  }
+  TaskManager() {}
 
+  void Init(std::shared_ptr<Graph> graph, const std::any& input,
+            std::any* output, uint64_t worker_nums = 4);
   void Run();
   ~TaskManager() { Clear(); }
-
- private:
   void Clear();
 
  private:

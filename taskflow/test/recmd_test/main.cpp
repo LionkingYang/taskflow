@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "taskflow/include/container/pool.h"
 #include "taskflow/include/kcfg/kcfg.h"
 #include "taskflow/include/macros/macros.h"
 #include "taskflow/include/taskflow.h"
@@ -37,7 +38,8 @@ void RunGraph() {
     auto input = std::any(request);
     auto output = std::any(response);
     // manager进行图运算，从json获取图组织方式
-    TaskManager manager(graph, input, &output);
+    GET_POOL_OBJ(taskflow::TaskManager, manager);
+    manager.Init(graph, input, &output);
     manager.Run();
     // 打印最终的输出结果
     response = std::any_cast<RecmdResponse>(output);

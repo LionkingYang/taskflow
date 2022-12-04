@@ -1,15 +1,14 @@
 // Copyright (c) 2022 liontyang<yangtian024@163.com> All rights reserved.
 // Licensed under the Apache License. See License file in the project root for
 // license information.
+
 #pragma once
 #define KCFG_STRINGIZE(arg) KCFG_STRINGIZE1(arg)
 #define KCFG_STRINGIZE1(arg) KCFG_STRINGIZE2(arg)
 #define KCFG_STRINGIZE2(arg) #arg
-//
 #define KCFG_CONCATENATE(arg1, arg2) KCFG_CONCATENATE1(arg1, arg2)
 #define KCFG_CONCATENATE1(arg1, arg2) KCFG_CONCATENATE2(arg1, arg2)
 #define KCFG_CONCATENATE2(arg1, arg2) arg1##arg2
-//
 #define KCFG_FOR_EACH_1(what, x, ...) what(x);
 
 #define KCFG_FOR_EACH_2(what, x, ...) \

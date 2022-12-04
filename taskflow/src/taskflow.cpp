@@ -10,6 +10,14 @@ using std::vector;
 
 namespace taskflow {
 
+void TaskManager::Init(std::shared_ptr<Graph> graph, const std::any& input,
+                       std::any* output, uint64_t worker_nums) {
+  work_manager_ = std::make_shared<taskflow::WorkManager>(4);
+  graph_ = graph;
+  input_context_ = std::make_shared<TaskContext>(input, output);
+  dependency_map_ = graph_->GetDependencyMap();
+}
+
 void TaskManager::Run() {
   while (true) {
     for (const auto& task : graph_->GetTasks()) {
