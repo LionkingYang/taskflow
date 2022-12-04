@@ -79,6 +79,11 @@ if __name__ == "__main__":
 #include <vector>
 
 #include "taskflow/include/taskflow.h"
+using taskflow::Graph;
+using taskflow::TaskContext;
+using taskflow::TaskFunc;
+using taskflow::TaskManager;
+
 """
     for dep in dep_map:
         op_content += generate_one_op(dep, dep_map, input_type, output_type)

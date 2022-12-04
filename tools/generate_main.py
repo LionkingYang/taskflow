@@ -42,7 +42,12 @@ if __name__ == "__main__":
 #include "taskflow/include/kcfg/kcfg.h"
 #include "taskflow/include/macros/macros.h"
 #include "taskflow/include/taskflow.h"
-#include "taskflow/test/math_test/math_op.h"
+#include "$your_project_path/project_op.h"
+
+using taskflow::Graph;
+using taskflow::TaskContext;
+using taskflow::TaskFunc;
+using taskflow::TaskManager;
 
 // 使用json构建图
 void RunGraph() {{

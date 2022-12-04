@@ -91,7 +91,7 @@ def check_if_legal(ops, dep_map):
         for each in op[1]:
             if each[1] not in deps["depedencies"]:
                 raise Exception(
-                    "{} 算子依赖的 {}不在json设置的依赖里".format(op[0], each[1]))
+                    "{}算子依赖的{}不在json设置的依赖里".format(op[0], each[1]))
             if len(each[0]) > 0 and "type" in dep_map[each[1]]:
                 left = dep_map[each[1]]["type"]
                 right = each[0]
@@ -99,7 +99,7 @@ def check_if_legal(ops, dep_map):
                 right = right.split("::")[-1] if "::" in right else right
                 if left != right:
                     raise Exception(
-                        "{} 算子中使用{}算子的输入类型和json不一致".format(op[0], each[1]))
+                        "{}算子中使用{}算子的输入类型和json不一致".format(op[0], each[1]))
 
 
 if __name__ == "__main__":
