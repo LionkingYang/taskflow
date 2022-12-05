@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "taskflow/include/taskflow.h"
-#include "taskflow/test/recmd_test/struct_define.h"
+#include "test/recmd_test/struct_define.h"
 
 using taskflow::Graph;
 using taskflow::TaskContext;
