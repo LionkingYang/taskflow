@@ -77,3 +77,9 @@ http_archive(
         "https://github.com/gabime/spdlog/archive/v{ver}.tar.gz".format(ver = spdlog_ver),
     ],
 )
+
+git_repository(
+    name = "com_github_absl",
+    remote = "https://github.com/abseil/abseil-cpp.git",
+    tag = "20211102.0",
+)

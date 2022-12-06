@@ -58,9 +58,6 @@ class ConcurrentMap {
     return ac->second;
   }
 
-  // 重载[]符号，不可写，且需要先判断key是否存在，否则会拿到不可预料的结果
-  const V& operator[](const K& k) const { return this->at[k]; }
-
   // 类似map的count方法，判断key是否存在
   int count(const K& k) {
     const_accessor ac;

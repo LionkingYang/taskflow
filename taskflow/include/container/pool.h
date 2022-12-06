@@ -11,13 +11,13 @@
 #include <type_traits>
 #include <vector>
 
-#include "taskflow/include/async_task/work_manager.h"
 #include "taskflow/include/container/singleton.h"
+#include "taskflow/include/work_manager/work_manager.h"
 
 namespace taskflow {
 template <typename U>
 struct HasClear {
-  template <typename T, void (T::*)() = &T::clear>
+  template <typename T, void (T::*)() = &T::Clear>
   static constexpr bool check(T*) {
     return true;
   }
@@ -29,9 +29,8 @@ struct HasClear {
 template <typename T, typename Enable = void>
 class ObjectPool : public taskflow::Singleton<ObjectPool<T>> {
  public:
-  explicit ObjectPool(size_t limit = 1024, uint64_t worker_num = 2)
-      : limit_(limit),
-        worker_(std::make_shared<taskflow::WorkManager>(worker_num)) {}
+  explicit ObjectPool(size_t limit = 1024)
+      : limit_(limit), worker_(std::make_shared<taskflow::WorkManager>()) {}
   void AddAvailable(T* v) {
     std::lock_guard<std::mutex> guard(alloc_mutex_);
     if (available_objs_.size() >= limit_) {
@@ -52,7 +51,7 @@ class ObjectPool : public taskflow::Singleton<ObjectPool<T>> {
   void Recycle(T* v) {
     auto func = [=]() {
       if constexpr (HasClear<T>::ret) {
-        v->clear();
+        v->Clear();
         this->AddAvailable(v);
       } else {
         v->~T();

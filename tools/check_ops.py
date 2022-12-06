@@ -59,6 +59,9 @@ def parse_op(op: str) -> list:
 
 
 def parse_ops(s: str):
+    output = re.findall(r"WriteToFinalOutput\((.*)\)", s)
+    if len(output) > 1:
+        raise Exception("more than one final output?")
     ops = []
     tmp = ""
     begin = False

@@ -4,17 +4,28 @@
 
 #include "taskflow/include/taskflow.h"
 
+#include <sys/time.h>
+
+#include "taskflow/include/utils/latency_guard.h"
+
 using std::string;
 using std::unordered_map;
 using std::vector;
-
+long getCurrentTime() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
 namespace taskflow {
 
-void TaskManager::Init(std::shared_ptr<Graph> graph, const std::any& input,
+void TaskManager::Init(std::shared_ptr<Graph> graph,
+                       taskflow::SoScript* so_script, const std::any& input,
                        std::any* output, uint64_t worker_nums) {
-  work_manager_ = std::make_shared<taskflow::WorkManager>(4);
+  work_manager_ = std::make_shared<taskflow::WorkManager>();
   graph_ = graph;
-  input_context_ = std::make_shared<TaskContext>(input, output);
+  so_script_ = so_script;
+  input_context_ = new TaskContext(input, output);
+  input_context_->Clear();
   dependency_map_ = graph_->GetDependencyMap();
 }
 
@@ -23,32 +34,39 @@ void TaskManager::Run() {
     for (const auto& task : graph_->GetTasks()) {
       // 找出没有前置依赖并且还没执行的task
       if (dependency_map_[task->GetTaskName()] == 0 &&
-          !map_finish_.find(task->GetTaskName()) &&
           !map_in_progress_.find(task->GetTaskName())) {
         // 设置执行状态为true
         map_in_progress_.emplace(task->GetTaskName(), 1);
         // 构建task任务
         auto t = [this, task] {
           // 执行用户设定的task
-          if (nullptr != task->GetJob()) {
-            (*task->GetJob())(input_context_.get());
+          if (const auto func =
+                  so_script_->GetFunc("func_" + task->GetTaskName());
+              func != nullptr) {
+            func(*input_context_);
+          } else {
+            std::cout << "func of " << task->GetTaskName() << " is empty\n";
           }
           // 执行完之后，更新依赖此task任务的依赖数
           if (graph_->GetDependendMap()->find(task->GetTaskName())) {
-            for (const auto& each :
-                 graph_->GetDependendMap()->at(task->GetTaskName())) {
-              dependency_map_[each->GetTaskName()]--;
+            {
+              std::lock_guard<std::mutex> lock(mu_);
+              for (const auto& each :
+                   graph_->GetDependendMap()->at(task->GetTaskName())) {
+                dependency_map_[each->GetTaskName()]--;
+              }
             }
           }
           // 更新finish数组
-          map_finish_.emplace(task->GetTaskName(), 1);
+          finish_num_.fetch_add(1);
         };
         // 随机选取worker执行task
+        // tg_.run(t);
         work_manager_->Execute(t);
       }
     }
     // 任务全部完成，退出
-    if (uint64_t(map_finish_.size()) == graph_->GetTasks().size()) {
+    if (uint64_t(finish_num_.load()) == graph_->GetTasks().size()) {
       break;
     }
   }
@@ -105,15 +123,13 @@ bool Graph::CircleCheck() {
 }
 
 // 从json字符串中构建tasks
-void Graph::BuildFromJson(const string& json_path,
-                          unordered_map<string, TaskFunc*>* func_map) {
+void Graph::BuildFromJson(const string& json_path) {
   Jobs jobs;
   kcfg::ParseFromJsonFile(json_path, jobs);
   unordered_map<string, TaskPtr> task_map;
   // 遍历一遍，拿到task列表
   for (const auto& each : jobs.tasks) {
-    TaskPtr A =
-        std::make_shared<Task>(each.task_name, (*func_map)[each.task_name]);
+    TaskPtr A = std::make_shared<Task>(each.task_name);
     task_map.emplace(each.task_name, A);
     tasks_.emplace_back(A);
   }
@@ -129,6 +145,10 @@ void Graph::BuildFromJson(const string& json_path,
 
 void TaskManager::Clear() {
   dependency_map_.clear();
-  map_finish_.clear();
+  map_in_progress_.clear();
+  delete input_context_;
+  // finish_task_ = 0;
+  graph_.reset();
 }
+
 }  // namespace taskflow

@@ -826,29 +826,29 @@
 #define KCFG_FOR_EACH(what, ...) \
   KCFG_FOR_EACH_(KCFG_NARG_(__VA_ARGS__), what, __VA_ARGS__)
 
-#define BeginFunc(task_name) void func_##task_name(TaskContext* context)
+#define BeginFunc(task_name) void func_##task_name(TaskContext& context)
 #define RegisterFunc(task_name)                          \
   taskflow::TaskFunc task_func##task_name =              \
       static_cast<taskflow::TaskFunc>(func_##task_name); \
   func_map.emplace(#task_name, &task_func##task_name);
 #define RegisterFuncs(...) KCFG_FOR_EACH(RegisterFunc, __VA_ARGS__)
 #define ReadTaskOutputUnsafe(task_name, type) \
-  std::any_cast<type>(context->task_output[KCFG_STRINGIZE2(task_name)])
+  std::any_cast<type>(context.task_output[KCFG_STRINGIZE2(task_name)])
 #define WriteTaskOutput(task_name, type) \
-  context->task_output[KCFG_STRINGIZE2(task_name)]
-#define FinalOutput *(context->global_output)
-#define Input(type) std::any_cast<type>(context->global_input)
+  context.task_output[KCFG_STRINGIZE2(task_name)]
+#define FinalOutput *(context.global_output)
+#define Input(type) std::any_cast<type>(context.global_input)
 #define GetValue(type) std::make_any<type>
 #define WriteToOutput(task_name, type, result) \
   WriteTaskOutput(task_name, type) = GetValue(type)(result);
 #define WriteToFinalOutput(type, result) FinalOutput = GetValue(type)(result);
-#define ReadTaskOutput(task_name, type, out)                               \
-  try {                                                                    \
-    std::any_cast<type>(context->task_output[KCFG_STRINGIZE2(task_name)]); \
-  } catch (const std::bad_any_cast& e) {                                   \
-    std::cout << "fetch task name:" << KCFG_STRINGIZE2(task_name)          \
-              << "'s output has error, check again:\n";                    \
-  }                                                                        \
+#define ReadTaskOutput(task_name, type, out)                              \
+  try {                                                                   \
+    std::any_cast<type>(context.task_output[KCFG_STRINGIZE2(task_name)]); \
+  } catch (const std::bad_any_cast& e) {                                  \
+    std::cout << "fetch task name:" << KCFG_STRINGIZE2(task_name)         \
+              << "'s output has error, check again:\n";                   \
+  }                                                                       \
   type out = ReadTaskOutputUnsafe(task_name, type);
 
 #define EndFunc ;

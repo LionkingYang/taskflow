@@ -8,9 +8,10 @@
 template <typename T>
 class DoubleBuffer {
  public:
+  DoubleBuffer() : index_(0) {}
   const T& Get() { return data[index_.load()]; }
   void Switch() { index_.fetch_xor(1); }
-  T& set() { return data[1 - index_.load()]; }
+  T& Next() { return data[1 - index_.load()]; }
 
  private:
   T data[2];
