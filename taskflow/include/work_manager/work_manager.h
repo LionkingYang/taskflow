@@ -21,7 +21,6 @@ class WorkManager {
   void Execute(AnyFunc task) {
     // 随机选取worker执行task
     tg_.run(task);
-    // tg_.run([task]() { task(); });
   }
 
  private:
