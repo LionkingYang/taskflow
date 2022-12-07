@@ -50,8 +50,8 @@ TaskFlow的执行存在以下难点：
 		"dependencies": [],
 		"type": "int",
 		"use_input": "1",
-        "config":"a=1|b=2",
-        "final_output*":"1"
+		"config": "a=1|b=2",
+		"final_output*": "1"
 	}]
 }
 ```
@@ -153,7 +153,7 @@ using taskflow::TaskManager;
 void RunGraph() {
   // 图配置和算子路径
   std::string json_path = "此处填写你的json配置的文件地址";
-  std::string script_path = "此处填写你的算子目录"";
+  std::string script_path = "此处填写你的算子目录";
 
   // 注册图和算子，都是可热更新的
   taskflow::ReloadableObj<taskflow::Graph> reloadable_graph(json_path);
