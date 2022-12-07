@@ -37,7 +37,8 @@ def build_depedency_map(tasks: map) -> map:
 
 
 def generate_one_op(op_name: str, dep_map: map, input_type: str, output_type: str):
-    op_str = "\n\nBeginFunc({}) {{\n".format(op_name)
+    op_str = "\n\nBeginTask({}) {{\n".format(op_name)
+    op_str += "\tLoadTaskConfig({}, conf);\n".format(op_name)
     if dep_map[op_name]["use_input"] == "1":
         op_str += "\tGetGlobalInput({}, input_name);\n".format(input_type)
     for each in dep_map[op_name]["dependencies"]:
@@ -50,7 +51,7 @@ def generate_one_op(op_name: str, dep_map: map, input_type: str, output_type: st
         op_str += "\tWriteToOutput({}, {}, {}_output);\n".format(
             op_name, dep_map[op_name]["type"] if len(dep_map[op_name]["type"]) > 0 else "$output_type", op_name)
 
-    op_str += "}\nEndFunc;"
+    op_str += "}\nEndTask;"
     return op_str
 
 

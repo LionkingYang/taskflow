@@ -21,37 +21,35 @@ using taskflow::TaskManager;
 using namespace std::chrono_literals;
 extern "C" {
 
-BeginFunc(a) {
+BeginTask(a) {
   GetGlobalInput(int, res);
   std::this_thread::sleep_for(50ms);
   LoadTaskConfig(a, conf);
-  for (const auto& each : conf) {
-    TASKFLOW_INFO("config of a is {}:{}", each.first, each.second);
-  }
+  DebugConfig(a);
   res += 1;
   WriteToOutput(a, int, res);
 }
-EndFunc;
+EndTask;
 
-BeginFunc(b) {
+BeginTask(b) {
   ReadTaskOutput(a, int, res);
   std::this_thread::sleep_for(50ms);
 
   res += 2;
   WriteToOutput(b, int, res);
 }
-EndFunc;
+EndTask;
 
-BeginFunc(c) {
+BeginTask(c) {
   ReadTaskOutput(a, int, res);
   std::this_thread::sleep_for(50ms);
 
   res += 2;
   WriteToOutput(c, int, res);
 }
-EndFunc;
+EndTask;
 
-BeginFunc(d) {
+BeginTask(d) {
   ReadTaskOutput(b, int, res_b);
   ReadTaskOutput(c, int, res_c);
   std::this_thread::sleep_for(50ms);
@@ -59,23 +57,23 @@ BeginFunc(d) {
   int res_d = res_b + res_c;
   WriteToOutput(d, int, res_d);
 }
-EndFunc;
+EndTask;
 
-BeginFunc(e) {
+BeginTask(e) {
   ReadTaskOutput(d, int, res);
   std::this_thread::sleep_for(50ms);
 
   res += 1;
   WriteToOutput(e, int, res);
 }
-EndFunc;
+EndTask;
 
-BeginFunc(f) {
+BeginTask(f) {
   ReadTaskOutput(e, int, res);
   std::this_thread::sleep_for(50ms);
 
   res += 1;
   WriteToFinalOutput(int, res);
 }
-EndFunc;
+EndTask;
 }

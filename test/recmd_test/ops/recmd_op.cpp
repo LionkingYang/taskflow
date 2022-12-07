@@ -21,15 +21,15 @@ using taskflow::TaskFunc;
 using taskflow::TaskManager;
 
 extern "C" {
-BeginFunc(ParseRequest) {
+BeginTask(ParseRequest) {
   GetGlobalInput(RecmdRequest, request);
   TASKFLOW_INFO("request personid:{}, request count:{}", request.personid,
                 request.count);
   WriteToOutput(ParseRequest, std::string, request.personid);
 }
-EndFunc
+EndTask
 
-BeginFunc(BlackList) {
+BeginTask(BlackList) {
   ReadTaskOutput(ParseRequest, std::string, personid);
   Blacklist blacklist;
   blacklist.black_feeds.emplace("aaaaa", 1);
@@ -37,9 +37,9 @@ BeginFunc(BlackList) {
   blacklist.black_posters.emplace("11111", 1);
   WriteToOutput(BlackList, Blacklist, blacklist);
 }
-EndFunc
+EndTask
 
-BeginFunc(UU) {
+BeginTask(UU) {
   ReadTaskOutput(ParseRequest, std::string, personid);
   UserInfo user;
   user.age = 18;
@@ -56,9 +56,9 @@ BeginFunc(UU) {
   user.short_term_interest.emplace_back(std::move(interest));
   WriteToOutput(UU, UserInfo, user);
 }
-EndFunc
+EndTask
 
-BeginFunc(RecallCB) {
+BeginTask(RecallCB) {
   ReadTaskOutput(UU, UserInfo, user);
   ReadTaskOutput(BlackList, Blacklist, blacklist);
   vector<string> feeds = {"aaaaa", "ccccc", "eeeee"};
@@ -77,9 +77,9 @@ BeginFunc(RecallCB) {
   cb_result.recall_feeds.swap(recall_feeds);
   WriteToOutput(RecallCB, RecallResult, cb_result);
 }
-EndFunc
+EndTask
 
-BeginFunc(RecallEMB) {
+BeginTask(RecallEMB) {
   ReadTaskOutput(UU, UserInfo, user);
   ReadTaskOutput(BlackList, Blacklist, blacklist);
   vector<string> feeds = {"bbbbb", "ddddd", "fffff"};
@@ -98,9 +98,9 @@ BeginFunc(RecallEMB) {
   emb_result.recall_feeds.swap(recall_feeds);
   WriteToOutput(RecallEMB, RecallResult, emb_result);
 }
-EndFunc
+EndTask
 
-BeginFunc(RecallMerge) {
+BeginTask(RecallMerge) {
   ReadTaskOutput(RecallCB, RecallResult, cb_result);
   ReadTaskOutput(RecallEMB, RecallResult, emb_result);
   RecallResult merge_result;
@@ -112,9 +112,9 @@ BeginFunc(RecallMerge) {
   }
   WriteToOutput(RecallMerge, RecallResult, merge_result);
 }
-EndFunc
+EndTask
 
-BeginFunc(Rank) {
+BeginTask(Rank) {
   ReadTaskOutput(RecallMerge, RecallResult, recall_result);
   for (auto& each : recall_result.recall_feeds) {
     each.score_map.emplace("aa", random() % 10 / 10.0);
@@ -125,9 +125,9 @@ BeginFunc(Rank) {
   rank_result.rank_feeds.swap(recall_result.recall_feeds);
   WriteToOutput(Rank, RankResult, rank_result);
 }
-EndFunc
+EndTask
 
-BeginFunc(Policy) {
+BeginTask(Policy) {
   ReadTaskOutput(Rank, RankResult, rank_result);
   std::sort(
       rank_result.rank_feeds.begin(), rank_result.rank_feeds.end(),
@@ -136,13 +136,13 @@ BeginFunc(Policy) {
   policy_result.policy_feeds.swap(rank_result.rank_feeds);
   WriteToOutput(Policy, PolicyResult, policy_result);
 }
-EndFunc
+EndTask
 
-BeginFunc(FillResponse) {
+BeginTask(FillResponse) {
   ReadTaskOutput(Policy, PolicyResult, policy_result);
   RecmdResponse response;
   response.feeds_list.swap(policy_result.policy_feeds);
   WriteToFinalOutput(RecmdResponse, response);
 }
-EndFunc
+EndTask
 }

@@ -42,7 +42,7 @@ void RunGraph() {
     taskflow::TaskManager manager(graph, &so_script, input, &output);
     manager.Run();
     // 打印最终的输出结果
-    TASKFLOW_INFO("last res:{}", std::any_cast<int>(output));
+    // TASKFLOW_INFO("last res:{}", std::any_cast<int>(output));
   }
 }
 

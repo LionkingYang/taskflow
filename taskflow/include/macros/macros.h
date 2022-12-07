@@ -831,7 +831,7 @@
 #define KCFG_FOR_EACH(what, ...) \
   KCFG_FOR_EACH_(KCFG_NARG_(__VA_ARGS__), what, __VA_ARGS__)
 
-#define BeginFunc(task_name) void func_##task_name(TaskContext& context)
+#define BeginTask(task_name) void func_##task_name(TaskContext& context)
 #define RegisterFunc(task_name)                          \
   taskflow::TaskFunc task_func##task_name =              \
       static_cast<taskflow::TaskFunc>(func_##task_name); \
@@ -856,7 +856,7 @@
   }                                                                       \
   type out = ReadTaskOutputUnsafe(task_name, type);
 
-#define EndFunc ;
+#define EndTask ;
 
 #define GetGlobalInput(type, res)                                              \
   try {                                                                        \
@@ -869,3 +869,9 @@
 #define LoadTaskConfig(task_name, config)                      \
   const std::unordered_map<std::string, std::string>& config = \
       context.task_config[KCFG_STRINGIZE2(task_name)]
+
+#define DebugConfig(task_name)                                               \
+  for (const auto& each : context.task_config[KCFG_STRINGIZE2(task_name)]) { \
+    TASKFLOW_INFO("config of {} is {}:{}", KCFG_STRINGIZE2(task_name),       \
+                  each.first, each.second);                                  \
+  }

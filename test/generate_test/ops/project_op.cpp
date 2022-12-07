@@ -15,44 +15,44 @@ using taskflow::TaskManager;
 
 extern "C" {
 
-BeginFunc(a) {
+BeginTask(a) {
+  LoadTaskConfig(a, conf);
   GetGlobalInput(int, input_name);
   // write your code here
-  int a_output = input_name + 1;
   WriteToOutput(a, int, a_output);
 }
-EndFunc;
+EndTask;
 
-BeginFunc(b) {
+BeginTask(b) {
+  LoadTaskConfig(b, conf);
   ReadTaskOutput(a, int, a_output);
   // write your code here
-  int b_output = a_output + 1;
   WriteToOutput(b, int, b_output);
 }
-EndFunc;
+EndTask;
 
-BeginFunc(c) {
+BeginTask(c) {
+  LoadTaskConfig(c, conf);
   ReadTaskOutput(a, int, a_output);
   // write your code here
-  int c_output = a_output + 1;
   WriteToOutput(c, int, c_output);
 }
-EndFunc;
+EndTask;
 
-BeginFunc(d) {
+BeginTask(d) {
+  LoadTaskConfig(d, conf);
   ReadTaskOutput(b, int, b_output);
   ReadTaskOutput(c, int, c_output);
   // write your code here
-  int d_output = b_output + c_output;
   WriteToOutput(d, int, d_output);
 }
-EndFunc;
+EndTask;
 
-BeginFunc(e) {
+BeginTask(e) {
+  LoadTaskConfig(e, conf);
   ReadTaskOutput(d, int, d_output);
   // write your code here
-  int final_output = d_output + 1;
   WriteToFinalOutput(int, final_output);
 }
-EndFunc;
+EndTask;
 }

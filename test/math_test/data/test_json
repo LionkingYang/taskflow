@@ -3,14 +3,15 @@
         {
             "task_name": "a",
             "dependencies": [],
-            "config": "a=1"
+            "config": "a=1|c=2"
         },
         {
             "task_name": "b",
             "dependencies": [
                 "a"
             ],
-            "type": "int"
+            "type": "int",
+            "config":"c=dd"
         },
         {
             "task_name": "c",

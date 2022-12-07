@@ -28,7 +28,7 @@ def build_depedency_map(tasks: map) -> map:
 
 
 def parse_op(op: str) -> list:
-    op_name = re.findall(r"BeginFunc\(([^(]*)\)", op)
+    op_name = re.findall(r"BeginTask\(([^(]*)\)", op)
     if len(op_name) == 0:
         raise Exception("op name dosen't found")
     op_name = op_name[0]
@@ -71,12 +71,12 @@ def parse_ops(s: str):
         line = line.strip()
         if not (len(line) > 2 and line[:2] != "//" and line[:2] != "/*" and line[0] != "*"):
             continue
-        if "BeginFunc" in line:
+        if "BeginTask" in line:
             tmp = ""
             tmp += line
             begin = True
             continue
-        if "EndFunc" in line:
+        if "EndTask" in line:
             tmp += line
             ops .append(tmp)
             begin = False

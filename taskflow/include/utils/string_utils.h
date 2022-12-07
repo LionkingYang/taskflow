@@ -13,8 +13,8 @@
 static std::unordered_map<std::string, std::string> split_twice(
     const std::string& s, std::string_view d1, std::string_view d2) {
   std::unordered_map<std::string, std::string> m;
-  for (absl::string_view sp : absl::StrSplit(s, d1)) {
-    m.insert(absl::StrSplit(sp, absl::MaxSplits(d2, 1)));
+  for (absl::string_view sp : absl::StrSplit(s, d1, absl::SkipEmpty())) {
+    m.insert(absl::StrSplit(sp, absl::MaxSplits(d2, 1), absl::SkipEmpty()));
   }
   return m;
 }
