@@ -10,10 +10,10 @@ cc_binary(
 
 cc_binary(
     name = "recmd_op",
-    srcs = [
-        "test/recmd_test/ops/recmd_op.cpp",
-        "test/recmd_test/ops/struct_define.h",
-    ],
+    srcs = glob([
+        "test/recmd_test/ops/*.cpp",
+        "test/recmd_test/deps/*.h",
+    ]),
     linkopts = [
         "-lpthread",
         "-rdynamic",
@@ -64,10 +64,10 @@ cc_binary(
 
 cc_binary(
     name = "recmd_test",
-    srcs = [
-        "test/recmd_test/main.cpp",
-        "test/recmd_test/ops/struct_define.h",
-    ],
+    srcs = glob([
+        "test/recmd_test/**/*.cpp",
+        "test/recmd_test/**/*.h",
+    ]),
     linkopts = [
         "-lpthread",
         "-rdynamic",

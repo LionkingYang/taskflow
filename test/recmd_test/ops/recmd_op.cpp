@@ -13,7 +13,7 @@
 #include "taskflow/include/logger/logger.h"
 #include "taskflow/include/taskflow.h"
 #include "taskflow/include/utils/latency_guard.h"
-#include "test/recmd_test/ops/struct_define.h"
+#include "test/recmd_test/deps/struct_define.h"
 
 using taskflow::Graph;
 using taskflow::TaskContext;
