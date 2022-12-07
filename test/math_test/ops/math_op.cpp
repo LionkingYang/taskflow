@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "taskflow/include/logger/logger.h"
 #include "taskflow/include/taskflow.h"
 
 using taskflow::Graph;
@@ -23,7 +24,7 @@ extern "C" {
 BeginFunc(a) {
   GetGlobalInput(int, res);
   std::this_thread::sleep_for(50ms);
-  res += 5;
+  res += 1;
   WriteToOutput(a, int, res);
 }
 EndFunc;

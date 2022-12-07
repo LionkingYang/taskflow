@@ -11,31 +11,36 @@
 #include <vector>
 
 #include "taskflow/include/common_struct/task_struct.h"
+#include "taskflow/include/container/concurrent_map.h"
+#include "taskflow/include/container/singleton.h"
 #include "taskflow/include/utils/class_helper.h"
 #include "taskflow/include/work_manager/work_manager.h"
 
 namespace taskflow {
 
-class SoScript {
+class SoScript : taskflow::Singleton<SoScript> {
  public:
-  using SymboleTable = std::unordered_map<std::string, void*>;
+  using SymboleTable = taskflow::ConcurrentMap<std::string, void*>;
 
-  SoScript() : worker_(std::make_shared<taskflow::WorkManager>()) {}
-  ~SoScript();
+  explicit SoScript(const std::string& so_path) : so_path_(so_path) {
+    running_ = true;
+    Reload();
+    Run();
+  }
+  ~SoScript() noexcept;
 
   const taskflow::TaskFunc GetFunc(const std::string& func);
 
-  bool Init(const std::string& so_path);
-
  private:
+  void Run();
+  bool Reload();
+  int running_ = false;
   std::string so_path_;
-
-  std::mutex cache_mutex_;
+  tbb::task_group worker_;
   SymboleTable cache_syms_;
-
+  int64_t last_update_ = 0;
   void* so_handler_ = nullptr;
-  std::shared_ptr<taskflow::WorkManager> worker_;
-  DISALLOW_COPY_AND_ASSIGN(SoScript);
+  std::thread t_;
 };
 
 using SoScriptPtr = std::shared_ptr<SoScript>;

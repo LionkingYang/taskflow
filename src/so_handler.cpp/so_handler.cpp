@@ -13,55 +13,22 @@
 #include <strings.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include <chrono>
 #include <iostream>
 
-#include "absl/strings/match.h"
+#include "taskflow/include/logger/logger.h"
 #include "taskflow/include/reloadable/reloadable_object.h"
+#include "taskflow/include/utils/file_helper.h"
 
-using absl::lts_20211102::EndsWith;
 using namespace std::chrono_literals;
-
-bool ListDir(const std::string& path, std::vector<std::string>& dirs) {
-  struct stat buf = {0};
-  int ret = stat(path.c_str(), &buf);
-  if (0 == ret) {
-    if (S_ISDIR(buf.st_mode)) {
-      DIR* dir = opendir(path.c_str());
-      if (nullptr != dir) {
-        struct dirent* ptr = nullptr;
-        while ((ptr = readdir(dir)) != nullptr) {
-          if (!strcmp(ptr->d_name, ".") || !strcmp(ptr->d_name, "..")) {
-            continue;
-          }
-          std::string file_path = path;
-          file_path.append("/").append(ptr->d_name);
-          memset(&buf, 0, sizeof(buf));
-          ret = stat(path.c_str(), &buf);
-          if (ret == 0) {
-            if (S_ISDIR(buf.st_mode)) {
-              dirs.push_back(ptr->d_name);
-            }
-          }
-        }
-        closedir(dir);
-        return true;
-      }
-    }
-  }
-  return false;
-}
 
 namespace taskflow {
 
 const taskflow::TaskFunc SoScript::GetFunc(const std::string& func) {
-  std::lock_guard<std::mutex> guard(cache_mutex_);
-  auto found = cache_syms_.find(func);
-  if (found != cache_syms_.end()) {
-    return reinterpret_cast<taskflow::TaskFunc>(found->second);
+  if (cache_syms_.find(func)) {
+    return reinterpret_cast<taskflow::TaskFunc>(cache_syms_.at(func));
   }
 
   void* sym = dlsym(so_handler_, func.c_str());
@@ -69,15 +36,24 @@ const taskflow::TaskFunc SoScript::GetFunc(const std::string& func) {
   return reinterpret_cast<taskflow::TaskFunc>(sym);
 }
 
-bool SoScript::Init(const std::string& so_path) {
-  so_path_ = so_path;
+void SoScript::Run() {
+  auto func = [this]() {
+    while (running_) {
+      this->Reload();
+      std::this_thread::sleep_for(5000ms);
+    }
+  };
+  t_ = std::thread(func);
+}
+
+bool SoScript::Reload() {
   std::vector<string> dirs;
   ListDir(so_path_, dirs);
   string max_so = "";
   int64_t max_m = 0;
   for (const auto& each : dirs) {
     if (EndsWith(each, "so")) {
-      std::string so = so_path + "/" + each;
+      std::string so = so_path_ + "/" + each;
       struct stat st;
       if (stat(so.c_str(), &st) != 0) {
         continue;
@@ -89,32 +65,31 @@ bool SoScript::Init(const std::string& so_path) {
       }
     }
   }
+  if (max_m <= last_update_) {
+    TASKFLOW_INFO("no update of so file");
+    return true;
+  }
+  last_update_ = max_m;
   cache_syms_.clear();
   so_handler_ = dlopen(max_so.c_str(), RTLD_NOW);
   if (nullptr == so_handler_) {
-    std::cout << "open dl error:" << max_so << std::endl;
+    TASKFLOW_CRITICAL("open dl error:{}", max_so);
     return false;
   }
 
   return true;
 }
 
-SoScript::~SoScript() {
+SoScript::~SoScript() noexcept {
   // delay release
+  running_ = false;
+  t_.join();
   void* handler = so_handler_;
-  std::string path = so_path_;
-  //   worker_->Execute([handler, path]() {
-  //     // sleep 1min
-  //     std::this_thread::sleep_for(60 * 1000ms);
   if (nullptr != handler) {
     if (0 != dlclose(handler)) {
-      std::cout << "ERROR in close handler\n";
+      TASKFLOW_CRITICAL("ERROR in close handler");
     }
   }
-  //     if (!path.empty()) {
-  //       remove(path.c_str());
-  //     }
-  //   });
 }
 
 }  // namespace taskflow

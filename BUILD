@@ -4,7 +4,6 @@ cc_binary(
     name = "math_test",
     srcs = [
         "test/math_test/main.cpp",
-        "test/math_test/math_op.h",
     ],
     deps = ["//:task_flow_dep"],
 )
@@ -28,7 +27,7 @@ cc_binary(
 cc_binary(
     name = "math_op",
     srcs = [
-        "test/script/math_op.cpp",
+        "test/math_test/ops/math_op.cpp",
     ],
     linkopts = [
         "-lpthread",
@@ -40,14 +39,28 @@ cc_binary(
     deps = ["//:task_flow_dep"],
 )
 
-# cc_binary(
-#     name = "generate_test",
-#     srcs = [
-#         "test/generate_test/project_main.cpp",
-#         "test/generate_test/project_op.h",
-#     ],
-#     deps = ["//:task_flow_dep"],
-# )
+cc_binary(
+    name = "generate_op",
+    srcs = [
+        "test/generate_test/ops/project_op.cpp",
+    ],
+    linkopts = [
+        "-lpthread",
+        "-rdynamic",
+        "-fPIC -shared -rdynamic",
+    ],
+    linkshared = True,
+    linkstatic = True,
+    deps = ["//:task_flow_dep"],
+)
+
+cc_binary(
+    name = "generate_test",
+    srcs = [
+        "test/generate_test/project_main.cpp",
+    ],
+    deps = ["//:task_flow_dep"],
+)
 
 cc_binary(
     name = "recmd_test",

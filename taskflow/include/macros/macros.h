@@ -3,6 +3,7 @@
 // license information.
 
 #pragma once
+#include "taskflow/include/logger/logger.h"
 #define KCFG_STRINGIZE(arg) KCFG_STRINGIZE1(arg)
 #define KCFG_STRINGIZE1(arg) KCFG_STRINGIZE2(arg)
 #define KCFG_STRINGIZE2(arg) #arg
@@ -846,17 +847,17 @@
   try {                                                                   \
     std::any_cast<type>(context.task_output[KCFG_STRINGIZE2(task_name)]); \
   } catch (const std::bad_any_cast& e) {                                  \
-    std::cout << "fetch task name:" << KCFG_STRINGIZE2(task_name)         \
-              << "'s output has error, check again:\n";                   \
+    TASKFLOW_CRITICAL("fetch task {} output has error, check again!",     \
+                      KCFG_STRINGIZE2(task_name));                        \
   }                                                                       \
   type out = ReadTaskOutputUnsafe(task_name, type);
 
 #define EndFunc ;
 
-#define GetGlobalInput(type, res)                                          \
-  try {                                                                    \
-    Input(type);                                                           \
-  } catch (const std::bad_any_cast& e) {                                   \
-    std::cout << "fetch global input has error, the type dosen't match\n"; \
-  }                                                                        \
+#define GetGlobalInput(type, res)                                              \
+  try {                                                                        \
+    Input(type);                                                               \
+  } catch (const std::bad_any_cast& e) {                                       \
+    TASKFLOW_CRITICAL("fetch global input has error, the type doesn't match"); \
+  }                                                                            \
   type res = Input(type);

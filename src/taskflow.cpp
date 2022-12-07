@@ -18,9 +18,9 @@ long getCurrentTime() {
 }
 namespace taskflow {
 
-void TaskManager::Init(std::shared_ptr<Graph> graph,
-                       taskflow::SoScript* so_script, const std::any& input,
-                       std::any* output, uint64_t worker_nums) {
+TaskManager::TaskManager(std::shared_ptr<Graph> graph,
+                         taskflow::SoScript* so_script, const std::any& input,
+                         std::any* output) {
   work_manager_ = std::make_shared<taskflow::WorkManager>();
   graph_ = graph;
   so_script_ = so_script;
@@ -45,7 +45,7 @@ void TaskManager::Run() {
               func != nullptr) {
             func(*input_context_);
           } else {
-            std::cout << "func of " << task->GetTaskName() << " is empty\n";
+            TASKFLOW_ERROR("func of {} is empty!", task->GetTaskName());
           }
           // 执行完之后，更新依赖此task任务的依赖数
           if (graph_->GetDependendMap()->find(task->GetTaskName())) {
@@ -92,7 +92,7 @@ void Graph::BuildDependencyMap() {
   }
 }
 
-bool Graph::CircleCheck() {
+void Graph::CircleCheck() {
   // 为了不影响后续正常执行，复制出一份依赖关系出来
   auto dependency_map = dependency_map_;
   auto dependend_map = dependend_map_;
@@ -113,11 +113,13 @@ bool Graph::CircleCheck() {
     }
     // 所有任务都能按照某种顺序执行完成，无环
     if (uint64_t(map_finish.size()) == tasks_.size()) {
-      return false;
+      is_circle_ = false;
+      return;
     }
     // 在某次循环发现每个未执行任务都有前置依赖了，存在环依赖，退出
     if (!found) {
-      return true;
+      is_circle_ = true;
+      return;
     }
   }
 }

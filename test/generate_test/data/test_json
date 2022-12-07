@@ -28,6 +28,14 @@
                 "b",
                 "c"
             ],
+            "type": "int"
+        },
+        {
+            "task_name": "e",
+            "dependencies": [
+                "d"
+            ],
+            "type": "int",
             "final_output": "1"
         }
     ]

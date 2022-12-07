@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "taskflow/include/logger/logger.h"
 #include "taskflow/include/taskflow.h"
 #include "taskflow/include/utils/latency_guard.h"
 #include "test/recmd_test/ops/struct_define.h"
@@ -22,7 +23,8 @@ using taskflow::TaskManager;
 extern "C" {
 BeginFunc(ParseRequest) {
   GetGlobalInput(RecmdRequest, request);
-  std::cout << "request personid:" << request.personid << std::endl;
+  TASKFLOW_INFO("request personid:{}, request count:{}", request.personid,
+                request.count);
   WriteToOutput(ParseRequest, std::string, request.personid);
 }
 EndFunc

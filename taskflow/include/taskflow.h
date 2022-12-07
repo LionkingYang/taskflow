@@ -20,6 +20,7 @@
 #include "oneapi/tbb/task_group.h"
 #include "taskflow/include/common_struct/task_struct.h"
 #include "taskflow/include/container/concurrent_map.h"
+#include "taskflow/include/logger/logger.h"
 #include "taskflow/include/macros/macros.h"
 #include "taskflow/include/so_handler/so_handler.h"
 #include "taskflow/include/work_manager/work_manager.h"
@@ -34,9 +35,9 @@ using TaskPtr = std::shared_ptr<Task>;
 class Task {
  public:
   explicit Task(const string& task_name) : task_name_(task_name) {}
-  string GetTaskName() const { return task_name_; }
+  const string& GetTaskName() const { return task_name_; }
   int GetDependencyCount() const { return dependencies_.size(); }
-  vector<TaskPtr> GetDependencies() const { return dependencies_; }
+  const vector<TaskPtr>& GetDependencies() const { return dependencies_; }
 
   void AddDependecy(TaskPtr task) { dependencies_.emplace_back(task); }
 
@@ -54,7 +55,8 @@ class Graph {
     map_finish_.clear();
     BuildFromJson(graph_path);
     BuildDependencyMap();
-    return !CircleCheck();
+    CircleCheck();
+    return !GetCircle();
   }
 
   const taskflow::ConcurrentMap<string, vector<TaskPtr>>* GetDependendMap() {
@@ -64,28 +66,28 @@ class Graph {
     return dependency_map_;
   }
 
-  const vector<TaskPtr> GetTasks() { return tasks_; }
+  const vector<TaskPtr>& GetTasks() { return tasks_; }
 
-  bool CircleCheck();
+  bool GetCircle() { return is_circle_; }
 
  private:
   void BuildDependencyMap();
   void BuildFromJson(const string& graph_path);
+  void CircleCheck();
 
  private:
   taskflow::ConcurrentMap<string, int> dependency_map_;
   taskflow::ConcurrentMap<string, vector<TaskPtr>> dependend_map_;
   taskflow::ConcurrentMap<string, int> map_finish_;
   vector<TaskPtr> tasks_;
+  bool is_circle_ = false;
 };
 
 class TaskManager {
  public:
   // 使用已经建立好依赖关系的tasks列表进行初始化
-  TaskManager() {}
-
-  void Init(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script,
-            const std::any& input, std::any* output, uint64_t worker_nums = 4);
+  TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script,
+              const std::any& input, std::any* output);
   void Run();
   ~TaskManager() { Clear(); }
   void Clear();

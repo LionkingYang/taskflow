@@ -14,6 +14,7 @@
 #include <string>
 
 #include "taskflow/include/utils/class_helper.h"
+#include "taskflow/include/utils/latency_guard.h"
 
 namespace taskflow {
 class LatencyGuard {
@@ -23,12 +24,11 @@ class LatencyGuard {
   }
 
   ~LatencyGuard() {
-    std::cout << func_name_ << " cost"
-              << std::chrono::duration_cast<
-                     std::chrono::duration<double, std::milli>>(
-                     std::chrono::high_resolution_clock::now() - start_time_)
-                     .count()
-              << "ms\n";
+    TASKFLOW_INFO(
+        "{} cost {} ms.", func_name_,
+        std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
+            std::chrono::high_resolution_clock::now() - start_time_)
+            .count());
   }
 
  private:

@@ -11,6 +11,7 @@
 #include <string>
 #include <thread>
 
+#include "taskflow/include/logger/logger.h"
 #include "taskflow/include/reloadable/double_buffer.h"
 #include "taskflow/include/work_manager/work_manager.h"
 
@@ -32,19 +33,16 @@ class ReloadableObj {
   bool Load() {
     struct stat st;
     if (stat(path_.c_str(), &st) != 0) {
-      std::cout << "Failed to stat file. path:" << path_;
+      TASKFLOW_CRITICAL("Failed to stat file. path:{}", path_);
       return false;
     }
 
     if (st.st_mtim.tv_sec <= last_update_) {
-      //   std::cout << "The real update_time not more than recorded. real:"
-      //             << st.st_mtim.tv_sec << ". recorded:" << last_update_
-      //             << ". path:" << path_ << std::endl;
       return true;
     }
     T& ptr_data = double_confs_.Next();
     if (!ptr_data.Init(path_)) {
-      std::cout << "init file failed" << path_ << std::endl;
+      TASKFLOW_CRITICAL("init file failed:{}", path_);
       return false;
     }
     double_confs_.Switch();

@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -20,9 +21,10 @@ using taskflow::TaskManager;
 // 使用json构建图
 void RunGraph() {
   // json文件地址
-  std::string json_path = "/home/lion/taskflow/test/math_test/data/test_json";
+  std::string json_path =
+      "/home/lion/taskflow/test/generate_test/data/test_json";
   // 算子目录
-  std::string script_path = "/home/lion/taskflow/test/math_test/ops";
+  std::string script_path = "/home/lion/taskflow/test/generate_test/ops/";
   // 热加载图配置
   taskflow::ReloadableObj<taskflow::Graph> reloadable_graph(json_path);
   // 热加载算子图构建
