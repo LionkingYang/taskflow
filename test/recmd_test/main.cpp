@@ -42,7 +42,7 @@ void RunGraph() {
   for (int i = 0; i < 1000; i++) {
     std::shared_ptr<Graph> graph =
         std::make_shared<Graph>(reloadable_graph.Get());
-    if (graph->CircleCheck()) {
+    if (graph->GetCircle()) {
       TASKFLOW_CRITICAL("circle reference in graph");
       break;
     }

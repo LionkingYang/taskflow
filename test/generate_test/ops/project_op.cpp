@@ -25,16 +25,16 @@ EndFunc;
 
 BeginFunc(b) {
   ReadTaskOutput(a, int, a_output);
-  int b_output = a_output + 1;
   // write your code here
+  int b_output = a_output + 1;
   WriteToOutput(b, int, b_output);
 }
 EndFunc;
 
 BeginFunc(c) {
   ReadTaskOutput(a, int, a_output);
-  int c_output = a_output + 1;
   // write your code here
+  int c_output = a_output + 1;
   WriteToOutput(c, int, c_output);
 }
 EndFunc;
