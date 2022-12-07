@@ -39,15 +39,15 @@ def build_depedency_map(tasks: map) -> map:
 def generate_one_op(op_name: str, dep_map: map, input_type: str, output_type: str):
     op_str = "\n\nBeginFunc({}) {{\n".format(op_name)
     if dep_map[op_name]["use_input"] == "1":
-        op_str += "\tGetGlobalInput({}, $input_name);\n".format(input_type)
+        op_str += "\tGetGlobalInput({}, input_name);\n".format(input_type)
     for each in dep_map[op_name]["dependencies"]:
         op_str += "\tReadTaskOutput({}, {}, {});\n".format(each, dep_map[each]["type"] if len(
-            dep_map[each]["type"]) > 0 else "$param_type", "$"+each+"_output")
+            dep_map[each]["type"]) > 0 else "$param_type", each+"_output")
     op_str += "\t// write your code here\n"
     if dep_map[op_name]["output"] == "1":
-        op_str += "\tWriteToFinalOutput({}, $output_name);\n".format(output_type)
+        op_str += "\tWriteToFinalOutput({}, final_output);\n".format(output_type)
     else:
-        op_str += "\tWriteToOutput({}, {}, ${}_output);\n".format(
+        op_str += "\tWriteToOutput({}, {}, {}_output);\n".format(
             op_name, dep_map[op_name]["type"] if len(dep_map[op_name]["type"]) > 0 else "$output_type", op_name)
 
     op_str += "}\nEndFunc;"
@@ -71,25 +71,24 @@ if __name__ == "__main__":
     input_type = "$input_type" if "input_type" not in tasks else tasks["input_type"]
     output_type = "$output_type" if "output_type" not in tasks else tasks["output_type"]
     op_content = """
-// Copyright (c) 2022 liontyang<yangtian024@163.com> All rights reserved.
-// Licensed under the Apache License. See License file in the project root for
-// license information.
-
-#pragma once
 #include <any>
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "taskflow/include/logger/logger.h"
 #include "taskflow/include/taskflow.h"
+
 using taskflow::Graph;
 using taskflow::TaskContext;
 using taskflow::TaskFunc;
 using taskflow::TaskManager;
 
+extern "C" {
 """
     for dep in dep_map:
         op_content += generate_one_op(dep, dep_map, input_type, output_type)
+    op_content += "\n}\n"
     with open(op_path, "w") as f:
         f.write(op_content)
