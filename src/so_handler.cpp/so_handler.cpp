@@ -27,8 +27,8 @@ using namespace std::chrono_literals;
 namespace taskflow {
 
 const taskflow::TaskFunc SoScript::GetFunc(const std::string& func) {
-  if (cache_syms_.find(func)) {
-    return reinterpret_cast<taskflow::TaskFunc>(cache_syms_.at(func));
+  if (auto func_ptr = cache_syms_.find_with_value(func); func_ptr != nullptr) {
+    return reinterpret_cast<taskflow::TaskFunc>(*func_ptr);
   }
 
   void* sym = dlsym(so_handler_, func.c_str());
