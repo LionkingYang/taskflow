@@ -6,6 +6,7 @@
 
 #include <sys/time.h>
 
+#include "taskflow/include/json/json_parser.h"
 #include "taskflow/include/utils/latency_guard.h"
 
 using std::string;
@@ -43,6 +44,8 @@ void TaskManager::Run() {
           if (const auto func =
                   so_script_->GetFunc("func_" + task->GetTaskName());
               func != nullptr) {
+            input_context_->task_config[task->GetTaskName()] =
+                task->GetTaskConfig();
             func(*input_context_);
           } else {
             TASKFLOW_ERROR("func of {} is empty!", task->GetTaskName());
@@ -125,13 +128,16 @@ void Graph::CircleCheck() {
 }
 
 // 从json字符串中构建tasks
-void Graph::BuildFromJson(const string& json_path) {
+bool Graph::BuildFromJson(const string& json_path) {
   Jobs jobs;
-  kcfg::ParseFromJsonFile(json_path, jobs);
+  if (!kcfg::ParseFromJsonFile(json_path, jobs)) {
+    TASKFLOW_CRITICAL("error in parse json");
+    return false;
+  }
   unordered_map<string, TaskPtr> task_map;
   // 遍历一遍，拿到task列表
   for (const auto& each : jobs.tasks) {
-    TaskPtr A = std::make_shared<Task>(each.task_name);
+    TaskPtr A = std::make_shared<Task>(each.task_name, each.config);
     task_map.emplace(each.task_name, A);
     tasks_.emplace_back(A);
   }
@@ -143,13 +149,30 @@ void Graph::BuildFromJson(const string& json_path) {
       }
     }
   }
+  return true;
+}
+
+std::string Graph::ToString() {
+  std::string s;
+  for (auto begin = dependency_map_.begin(); begin != dependency_map_.end();
+       begin++) {
+    s += begin->first + ":" + std::to_string(begin->second) + "\n";
+  }
+  for (auto begin = dependend_map_.begin(); begin != dependend_map_.end();
+       begin++) {
+    s += begin->first + ":";
+    for (const auto& each : begin->second) {
+      s += each->GetTaskName();
+    }
+    s += "\n";
+  }
+  return s;
 }
 
 void TaskManager::Clear() {
   dependency_map_.clear();
   map_in_progress_.clear();
   delete input_context_;
-  // finish_task_ = 0;
   graph_.reset();
 }
 

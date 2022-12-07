@@ -9,15 +9,16 @@
 #include <vector>
 
 #include "taskflow/include/container/concurrent_map.h"
-#include "taskflow/include/kcfg/kcfg.h"
+#include "taskflow/include/json/json_parser.h"
 using std::string;
 using std::unordered_map;
 using std::vector;
 
 struct Job {
   string task_name;
+  string config;
   vector<string> dependencies;
-  KCFG_DEFINE_FIELDS(task_name, dependencies)
+  KCFG_DEFINE_FIELDS(task_name, config, dependencies)
 };
 
 struct Jobs {
@@ -34,6 +35,8 @@ struct TaskContext {
   const std::any global_input;
   std::any* global_output;
   taskflow::ConcurrentMap<string, std::any> task_output;
+  taskflow::ConcurrentMap<string, std::unordered_map<string, string>>
+      task_config;
   TaskContext(const std::any& input, std::any* output)
       : global_input(input), global_output(output) {}
   ~TaskContext() { Clear(); }

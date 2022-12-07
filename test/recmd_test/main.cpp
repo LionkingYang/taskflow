@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "taskflow/include/container/pool.h"
-#include "taskflow/include/kcfg/kcfg.h"
+#include "taskflow/include/json/json_parser.h"
 #include "taskflow/include/logger/logger.h"
 #include "taskflow/include/macros/macros.h"
 #include "taskflow/include/reloadable/reloadable_object.h"

@@ -2,7 +2,8 @@
     "tasks": [
         {
             "task_name": "a",
-            "dependencies": []
+            "dependencies": [],
+            "config": "a=1"
         },
         {
             "task_name": "b",

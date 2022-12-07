@@ -23,6 +23,7 @@
 #include "taskflow/include/logger/logger.h"
 #include "taskflow/include/macros/macros.h"
 #include "taskflow/include/so_handler/so_handler.h"
+#include "taskflow/include/utils/string_utils.h"
 #include "taskflow/include/work_manager/work_manager.h"
 using std::string;
 using std::unordered_map;
@@ -34,8 +35,14 @@ class Task;
 using TaskPtr = std::shared_ptr<Task>;
 class Task {
  public:
-  explicit Task(const string& task_name) : task_name_(task_name) {}
+  explicit Task(const string& task_name, const string& config)
+      : task_name_(task_name) {
+    config_map_ = split_twice(config, "|", "=");
+  }
   const string& GetTaskName() const { return task_name_; }
+  const std::unordered_map<std::string, std::string>& GetTaskConfig() const {
+    return config_map_;
+  }
   int GetDependencyCount() const { return dependencies_.size(); }
   const vector<TaskPtr>& GetDependencies() const { return dependencies_; }
 
@@ -43,6 +50,7 @@ class Task {
 
  private:
   const string task_name_;
+  std::unordered_map<std::string, std::string> config_map_;
   vector<TaskPtr> dependencies_;
 };
 
@@ -50,10 +58,14 @@ class Graph {
  public:
   Graph() {}
   bool Init(const string& graph_path) {
+    is_circle_ = false;
     dependency_map_.clear();
     dependend_map_.clear();
     map_finish_.clear();
-    BuildFromJson(graph_path);
+    tasks_.clear();
+    if (!BuildFromJson(graph_path)) {
+      return false;
+    }
     BuildDependencyMap();
     CircleCheck();
     return !GetCircle();
@@ -70,9 +82,11 @@ class Graph {
 
   bool GetCircle() { return is_circle_; }
 
+  std::string ToString();
+
  private:
   void BuildDependencyMap();
-  void BuildFromJson(const string& graph_path);
+  bool BuildFromJson(const string& graph_path);
   void CircleCheck();
 
  private:

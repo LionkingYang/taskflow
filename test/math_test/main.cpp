@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "taskflow/include/container/pool.h"
-#include "taskflow/include/kcfg/kcfg.h"
+#include "taskflow/include/json/json_parser.h"
 #include "taskflow/include/logger/logger.h"
 #include "taskflow/include/macros/macros.h"
 #include "taskflow/include/reloadable/reloadable_object.h"
@@ -30,17 +30,23 @@ void RunGraph() {
   // 初始化总的输入和输出
   auto input = std::any(0);
   auto output = std::any(0);
-  // 从热更新图里获取最新的图
-  std::shared_ptr<Graph> graph =
-      std::make_shared<Graph>(reloadable_graph.Get());
-  if (graph->GetCircle()) {
-    TASKFLOW_CRITICAL("graph has circle reference, check agin");
-  } else {
-    // manager进行图运算，从json获取图组织方式
-    taskflow::TaskManager manager(graph, &so_script, input, &output);
-    manager.Run();
-    // 打印最终的输出结果
-    TASKFLOW_INFO("last res:{}", std::any_cast<int>(output));
+  for (int i = 0; i < 1000; i++) {
+    // 从热更新图里获取最新的图
+    std::shared_ptr<Graph> graph =
+        std::make_shared<Graph>(reloadable_graph.Get());
+    if (graph->GetCircle()) {
+      TASKFLOW_CRITICAL("graph has circle reference, check agin");
+      break;
+    } else {
+      // manager进行图运算，从json获取图组织方式
+      taskflow::TaskManager manager(graph, &so_script, input, &output);
+      {
+        taskflow::LatencyGuard guard("cost");
+        manager.Run();
+      }
+      // 打印最终的输出结果
+      TASKFLOW_INFO("last res:{}", std::any_cast<int>(output));
+    }
   }
 }
 

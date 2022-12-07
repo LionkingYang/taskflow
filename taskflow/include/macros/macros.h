@@ -3,7 +3,11 @@
 // license information.
 
 #pragma once
+#include <string>
+#include <unordered_map>
+
 #include "taskflow/include/logger/logger.h"
+
 #define KCFG_STRINGIZE(arg) KCFG_STRINGIZE1(arg)
 #define KCFG_STRINGIZE1(arg) KCFG_STRINGIZE2(arg)
 #define KCFG_STRINGIZE2(arg) #arg
@@ -861,3 +865,7 @@
     TASKFLOW_CRITICAL("fetch global input has error, the type doesn't match"); \
   }                                                                            \
   type res = Input(type);
+
+#define LoadTaskConfig(task_name, config)                      \
+  const std::unordered_map<std::string, std::string>& config = \
+      context.task_config[KCFG_STRINGIZE2(task_name)]

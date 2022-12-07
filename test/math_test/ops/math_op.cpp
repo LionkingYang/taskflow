@@ -24,6 +24,10 @@ extern "C" {
 BeginFunc(a) {
   GetGlobalInput(int, res);
   std::this_thread::sleep_for(50ms);
+  LoadTaskConfig(a, conf);
+  for (const auto& each : conf) {
+    TASKFLOW_INFO("config of a is {}:{}", each.first, each.second);
+  }
   res += 1;
   WriteToOutput(a, int, res);
 }
