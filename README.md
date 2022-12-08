@@ -292,7 +292,7 @@ cc_binary(
 ## 实用工具
 
 主要工具都在tool目录下，包括：
-
+- TaskFlow图生成工具：generate_graph.py
 - 图配置检查工具：check_json_file.py
 - 算子检查工具：check_ops.py
 - 主文件生成工具：generate_main.py
