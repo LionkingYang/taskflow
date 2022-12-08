@@ -87,9 +87,11 @@ def parse_ops(s: str):
 
 
 def check_if_legal(ops, dep_map):
+    op_map = {}
     for op in ops:
         if op[0] not in dep_map:
             raise Exception("{}算子在json里面没有定义".format(op[0]))
+        op_map[op[0]] = 1
         deps = dep_map[op[0]]
         for each in op[1]:
             if each[1] not in deps["depedencies"]:
@@ -103,6 +105,9 @@ def check_if_legal(ops, dep_map):
                 if left != right:
                     raise Exception(
                         "{}算子中使用{}算子的输入类型和json不一致".format(op[0], each[1]))
+    for each in dep_map:
+        if each not in op_map:
+            raise Exception("json中定义的{}算子没有实现".format(each))
 
 
 if __name__ == "__main__":
