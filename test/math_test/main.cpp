@@ -39,7 +39,7 @@ void RunGraph() {
       break;
     } else {
       // manager进行图运算，从json获取图组织方式
-      taskflow::LatencyGuard guard("cost");
+      taskflow::LatencyGuard guard("run graph");
       taskflow::TaskManager manager(graph, &so_script, input, &output);
       manager.Run();
       // 打印最终的输出结果
