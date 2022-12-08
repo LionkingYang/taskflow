@@ -28,9 +28,9 @@ void RunGraph() {
   // 热加载算子图构建
   taskflow::SoScript so_script(script_path);
   // 初始化总的输入和输出
-  auto input = std::any(0);
   auto output = std::any(0);
   for (int i = 0; i < 1000; i++) {
+    auto input = std::any(static_cast<int>(random() % 100));
     // 从热更新图里获取最新的图
     std::shared_ptr<Graph> graph =
         std::make_shared<Graph>(reloadable_graph.Get());
