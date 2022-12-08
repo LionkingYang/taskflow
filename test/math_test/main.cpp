@@ -39,11 +39,9 @@ void RunGraph() {
       break;
     } else {
       // manager进行图运算，从json获取图组织方式
+      taskflow::LatencyGuard guard("cost");
       taskflow::TaskManager manager(graph, &so_script, input, &output);
-      {
-        taskflow::LatencyGuard guard("cost");
-        manager.Run();
-      }
+      manager.Run();
       // 打印最终的输出结果
       TASKFLOW_INFO("last res:{}", std::any_cast<int>(output));
     }
