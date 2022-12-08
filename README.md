@@ -107,7 +107,7 @@ EndTask;
 
 - **ReadTaskOutput(task_name, type, task_output)** 获取task_name算子的输入，并且赋值给type类型的名为task_output的变量上，**为const引用，不可修改**。此处也需注意type类型需要与算子真实的输出类型一致，否则会有bad_cast的风险，同时也需要保证在算子里只获取图配置里定义的依赖算子的输出，如：a算子依赖b, c算子的数据，那么在a算子中只能读取b,c算子的数据，否则会有bad_cast的风险。(**采用自动生成的算子可以规避此风险**)
 
-- **ReadTaskOutputMutable(task_name, type, task_output)**和ReadTaskOutput用法类似，但是返回的是非const引用，主要是为了一些业务场景可能需要直接swap上游算子的结果考虑，不建议频繁使用。
+- **ReadTaskOutputMutable(task_name, type, task_output)** 和ReadTaskOutput用法类似，但是返回的是非const引用，主要是为了一些业务场景可能需要直接swap上游算子的结果考虑，不建议频繁使用。
 
 - **WriteToOutput(task_name, type, task_output)** 将type类型名为task_output的变量值赋值给任务的输出。此处赋值之后，依赖该任务的其他任务可以通过**ReadTaskOutput** 算子获取到该算子的输出。
 
