@@ -44,16 +44,16 @@ TaskFlow的执行存在以下难点：
 
 ```json
 {
-	"input_type": "int",
-	"output_type": "int",
-	"tasks": [{
-		"task_name": "",
-		"dependencies": [],
-		"type": "int",
-		"use_input": "1",
-		"config": "a=1|b=2",
-		"final_output*": "1"
-	}]
+    "input_type": "int",
+    "output_type": "int",
+    "tasks": [{
+        "task_name": "",
+        "dependencies": [],
+        "type": "int",
+        "use_input": "1",
+        "config": "a=1|b=2",
+        "final_output*": "1"
+    }]
 }
 ```
 
@@ -115,9 +115,27 @@ EndTask;
 
 ### 执行
 
+以下demo可以在test/recmd_test下找到，主要是模拟推荐服务中网关服务的调度过程：
+
+```mermaid
+graph LR
+	A((ParseRequest)) --> B((UU))
+	A((ParseRequest)) --> C((BlackList))
+	B((UU)) --> D((RecallCB))
+	B((UU)) --> E((RecallEMB))
+	C((BlackList))-->D((RecallCB))
+	C((Blacklist))-->E((RecallEMB))
+	D((RecallCB))-->F((RecallMerge))
+	E((RecallEMB))-->F((RecallMerge))
+	F((RecallMerge))-->G((Rank))
+	G((Rank))-->H((Policy))
+	H((Policy))-->I((FillResponse))
+```
+
 推荐的目录结构如图：
 
-```.
+```
+.
 ├── data
 │   └── test_json
 ├── deps
@@ -210,7 +228,7 @@ int main(int argc, char **argv) {
 
 算子编译bazel配置:
 
-```pytho
+```python
 cc_binary(
     name = "recmd_op",
     srcs = glob([
@@ -230,7 +248,7 @@ cc_binary(
 
 编译命令：
 
-```she
+```shell
 bazel build //:recmd_op
 ```
 
@@ -238,7 +256,7 @@ bazel build //:recmd_op
 
 binary编译bazel配置：
 
-```pyth
+```python
 cc_binary(
     name = "recmd_test",
     srcs = glob([
@@ -257,7 +275,7 @@ cc_binary(
 
 运行命令：
 
-```she
+```shell
  bazel run //:recmd_test 
 ```
 
@@ -290,14 +308,16 @@ python3 generate_project.py project_path(你的项目目录) json_file_path(你�
 
 生成前，只有图配置json文件：
 
-```.
+```
+.
 ├── data
    └── test_json
 ```
 
 生成后目录如下：
 
-```.
+```
+.
 ├── data
 │   └── test_json
 ├── ops
@@ -308,6 +328,9 @@ python3 generate_project.py project_path(你的项目目录) json_file_path(你�
 输出算子和主文件，用户可以自行执行命令后去体验。
 
 ### 图配置检查
+
 ### 算子检查
+
 ### 算子生成
+
 ### 主文件生成
