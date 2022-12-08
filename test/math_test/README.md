@@ -4,7 +4,7 @@
 
 ```mermaid
 graph LR
-	input(input) --> a((input+1))
+	input(input) --> a((a=input+1))
 	a((input+1))-->b((b=a+1))
 	a((input+1))-->c((c=a+1))
 	b((b=a+1))-->d((d=b+c))
