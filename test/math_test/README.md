@@ -5,8 +5,8 @@
 ```mermaid
 graph LR
 	input(input) --> a((a=input+1))
-	a((input+1))-->b((b=a+1))
-	a((input+1))-->c((c=a+1))
+	a((a=input+1))-->b((b=a+1))
+	a((a=input+1))-->c((c=a+1))
 	b((b=a+1))-->d((d=b+c))
 	c((c=a+1))-->d((d=b+c))
 	d((d=b+c))-->e((e=d+1))
