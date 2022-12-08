@@ -406,6 +406,16 @@ Traceback (most recent call last):
 Exception: a output op name is not equal to task op name
 ```
 
+否则，若有json定义的算子在算子文件中没有定义，则输出：
+```shell
+Traceback (most recent call last):
+  File "/home/lion/taskflow/tools/check_ops.py", line 133, in <module>
+    check_if_legal(op_deps, dep_map)
+  File "/home/lion/taskflow/tools/check_ops.py", line 110, in check_if_legal
+    raise Exception("json中定义的{}算子没有实现".format(each))
+Exception: json中定义的g算子没有实现
+```
+
 ### 算子生成
 
 ```shell
