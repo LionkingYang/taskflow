@@ -24,22 +24,22 @@ extern "C" {
 BeginTask(a) {
   GetGlobalInput(int, res);
   DebugConfig(a);
-  res += 1;
-  WriteToOutput(a, int, res);
+  int res_a = res + 1;
+  WriteToOutput(a, int, res_a);
 }
 EndTask;
 
 BeginTask(b) {
-  ReadTaskOutput(a, int, res);
-  res += 1;
-  WriteToOutput(b, int, res);
+  ReadTaskOutput(a, int, res_a);
+  int res_b = res_a + 1;
+  WriteToOutput(b, int, res_b);
 }
 EndTask;
 
 BeginTask(c) {
-  ReadTaskOutput(a, int, res);
-  res += 1;
-  WriteToOutput(c, int, res);
+  ReadTaskOutput(a, int, res_a);
+  int res_c = res_a + 1;
+  WriteToOutput(c, int, res_c);
 }
 EndTask;
 
@@ -52,16 +52,16 @@ BeginTask(d) {
 EndTask;
 
 BeginTask(e) {
-  ReadTaskOutput(d, int, res);
-  res += 1;
-  WriteToOutput(e, int, res);
+  ReadTaskOutput(d, int, res_d);
+  int res_e = res_d + 1;
+  WriteToOutput(e, int, res_e);
 }
 EndTask;
 
 BeginTask(f) {
-  ReadTaskOutput(e, int, res);
-  res += 1;
-  WriteToFinalOutput(int, res);
+  ReadTaskOutput(e, int, res_e);
+  int res_f = res_e + 1;
+  WriteToFinalOutput(int, res_f);
 }
 EndTask;
 }
