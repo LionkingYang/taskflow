@@ -3,7 +3,8 @@
         {
             "task_name": "a",
             "dependencies": [],
-            "config": "a=1|c=2"
+            "config": "a=1|c=2",
+            "type": "int"
         },
         {
             "task_name": "b",
@@ -11,7 +12,7 @@
                 "a"
             ],
             "type": "int",
-            "config":"c=dd"
+            "config": "c=dd"
         },
         {
             "task_name": "c",

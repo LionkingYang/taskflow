@@ -329,8 +329,97 @@ python3 generate_project.py project_path(你的项目目录) json_file_path(你�
 
 ### 图配置检查
 
+```shell
+cd tools
+python3 check_json_file.py your_json_data_file
+```
+
+若图配置合法，则输出：
+
+```shell
+合法的依赖文件
+```
+
+否则，输出:
+
+```shell
+Traceback (most recent call last):
+  File "/home/lion/taskflow/tools/check_json_file.py", line 85, in <module>
+    raise Exception("存在循环依赖")
+Exception: 存在循环依赖
+```
+
 ### 算子检查
+
+```shell
+cd tools
+python3 check_ops.py your_op_file your_json_data_file
+```
+
+若算子合法，则输出：
+
+```shell
+合法的算子构造
+```
+
+否则，若有错误的数据依赖，输出：
+
+```shell
+Traceback (most recent call last):
+  File "/home/lion/taskflow/tools/check_ops.py", line 128, in <module>
+    check_if_legal(op_deps, dep_map)
+  File "/home/lion/taskflow/tools/check_ops.py", line 96, in check_if_legal
+    raise Exception(
+Exception: c算子依赖的b不在json设置的依赖里
+```
+
+否则，若有错误的输出类型读取，输出（**此校验需要在json内填写对应算子的输出类型才能生效**）：
+
+```shell
+Traceback (most recent call last):
+  File "/home/lion/taskflow/tools/check_ops.py", line 128, in <module>
+    check_if_legal(op_deps, dep_map)
+  File "/home/lion/taskflow/tools/check_ops.py", line 104, in check_if_legal
+    raise Exception(
+Exception: c算子中使用a算子的输入类型和json不一致
+```
+
+否则，若有未在json内定义的算子，输出：
+
+```shell
+Traceback (most recent call last):
+  File "/home/lion/taskflow/tools/check_ops.py", line 128, in <module>
+    check_if_legal(op_deps, dep_map)
+  File "/home/lion/taskflow/tools/check_ops.py", line 92, in check_if_legal
+    raise Exception("{}算子在json里面没有定义".format(op[0]))
+Exception: h算子在json里面没有定义
+```
+
+否则，若有算子输出时，输出名与对应算子名不一致，则输出
+
+```shell
+Traceback (most recent call last):
+  File "/home/lion/taskflow/tools/check_ops.py", line 127, in <module>
+    op_deps.append(parse_op(each))
+  File "/home/lion/taskflow/tools/check_ops.py", line 55, in parse_op
+    raise Exception(
+Exception: a output op name is not equal to task op name
+```
 
 ### 算子生成
 
+```shell
+cd tools
+python3 generate_op.py your_output_op_file your_json_data_file
+```
+
+会在tools目录下生成算子文件：your_output_op_file
+
 ### 主文件生成
+
+```shell
+cd tools
+python3 generate_main.py your_op_file your_json_data_file your_output_main_file
+```
+
+会在tools目录下生成主文件：your_output_main_file
