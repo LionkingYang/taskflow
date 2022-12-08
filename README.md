@@ -325,7 +325,7 @@ python3 generate_project.py project_path(你的项目目录) json_file_path(你�
 └── project_main.cpp
 ```
 
-输出算子和主文件，用户可以自行执行命令后去体验。
+输出算子和主文件，可以在这里查看: [generate_demo](https://github.com/LionkingYang/taskflow/tree/main/test/generate_test)。
 
 ### 图配置检查
 
@@ -407,6 +407,7 @@ Exception: a output op name is not equal to task op name
 ```
 
 否则，若有json定义的算子在算子文件中没有定义，则输出：
+
 ```shell
 Traceback (most recent call last):
   File "/home/lion/taskflow/tools/check_ops.py", line 133, in <module>
