@@ -115,7 +115,7 @@ EndTask;
 
 ### 执行
 
-以下demo可以在test/recmd_test下找到，主要是模拟推荐服务中网关服务的调度过程(更简单的demo看这里:[math_demo](https://github.com/LionkingYang/taskflow/tree/main/test/math_test))：
+以下demo可以在[recmd_demo](https://github.com/LionkingYang/taskflow/tree/main/test/recmd_test)下找到，主要是模拟推荐服务中网关服务的调度过程(更简单的demo看这里:[math_demo](https://github.com/LionkingYang/taskflow/tree/main/test/math_test))：
 
 ```mermaid
 graph LR
