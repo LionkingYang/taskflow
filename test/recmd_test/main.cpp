@@ -35,7 +35,7 @@ void RunGraph() {
   // 填request数据
   request.personid = "99999";
   // response
-  RecmdResponse response;
+  GET_POOL_OBJ(RecmdResponse, response);
   // 转化输入输出，方便统一的算子输入输出
   std::any input = std::any(request);
   std::any output = std::any(response);

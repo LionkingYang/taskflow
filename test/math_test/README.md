@@ -1,22 +1,43 @@
 # 实现简单的数学计算
-可以手动构建依赖 or 从json中提取依赖构建图
 
-本示例依赖关系见test_json
+实现图计算
 
-input->a->b/c->d->e->f->output
+```mermaid
+graph LR
+	input(input) --> a((input+1))
+	a((input+1))-->b((b=a+1))
+	a((input+1))-->c((c=a+1))
+	b((b=a+1))-->d((d=b+c))
+	c((c=a+1))-->d((d=b+c))
+	d((d=b+c))-->e((e=d+1))
+	e((e=d+1))-->f((f=e+1))
+	f((f=e+1))-->output(output)
+```
 
-算子a: input+1
+编译算子:
 
-算子b: a+1
+```shell
+bazel build //:math_op
+```
 
-算子c: a+1
+将编译好的算子复制到你的算子目录下：
 
-算子d: b+c
+```shell
+mv bazel-bin/libmath_op.so /your_project/ops
+```
 
-算子e: d+1
+运行计算
 
-算子f: e+1并且输出结果
-
-执行方法：
-
+```shell
 bazel run //:math_test
+```
+
+得到以下结果：
+
+```shell
+[2022-12-08 01:05:40.012] [info] [math_op.cpp:26] config of a is c:2
+[2022-12-08 01:05:40.012] [info] [math_op.cpp:26] config of a is a:1
+[2022-12-08 01:05:40.012] [info] [latency_guard.h:27] cost cost 0.023334 ms.
+[2022-12-08 01:05:40.012] [info] [main.cpp:48] last res:6
+```
+
