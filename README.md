@@ -327,6 +327,39 @@ python3 generate_project.py project_path(你的项目目录) json_file_path(你�
 
 输出算子和主文件，可以在这里查看: [generate_demo](https://github.com/LionkingYang/taskflow/tree/main/test/generate_test)。
 
+### 生成TaskFlow流图
+
+```shell
+cd tools
+python3 generate_graph.py your_json_data_file
+```
+
+会直接输出mermaid代码
+
+````shell
+```mermaid
+graph LR
+   a((a)) --> b((b))
+a((a)) --> c((c))
+b((b)) --> d((d))
+c((c)) --> d((d))
+d((d)) --> e((e))
+e((e)) --> f((f))
+```
+````
+
+直接复制到MarkDown中即可以看到效果，下图为math_test中json文件生成的图：
+
+```mermaid
+graph LR
+   a((a)) --> b((b))
+a((a)) --> c((c))
+b((b)) --> d((d))
+c((c)) --> d((d))
+d((d)) --> e((e))
+e((e)) --> f((f))
+```
+
 ### 图配置检查
 
 ```shell

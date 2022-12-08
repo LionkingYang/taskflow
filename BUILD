@@ -13,6 +13,7 @@ cc_binary(
     srcs = glob([
         "test/recmd_test/ops/*.cpp",
         "test/recmd_test/deps/*.h",
+        "test/recmd_test/deps/*.cpp",
     ]),
     linkopts = [
         "-lpthread",
