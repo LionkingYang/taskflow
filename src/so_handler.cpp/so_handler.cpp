@@ -21,8 +21,10 @@
 #include "taskflow/include/logger/logger.h"
 #include "taskflow/include/reloadable/reloadable_object.h"
 #include "taskflow/include/utils/file_helper.h"
+#include "taskflow/include/utils/time_hepler.h"
 
 using namespace std::chrono_literals;
+constexpr char kSoPrefix[] = "so_on_use_";
 
 namespace taskflow {
 
@@ -48,7 +50,7 @@ void SoScript::Run() {
 
 bool SoScript::Reload() {
   std::vector<string> dirs;
-  ListDir(so_path_, dirs);
+  taskflow::ListDir(so_path_, dirs);
   string max_so = "";
   int64_t max_m = 0;
   for (const auto& each : dirs) {
@@ -62,6 +64,8 @@ bool SoScript::Reload() {
       if (st.st_mtim.tv_sec >= max_m) {
         max_m = st.st_mtim.tv_sec;
         max_so = so;
+      } else {
+        remove(so.c_str());
       }
     }
   }
@@ -71,9 +75,12 @@ bool SoScript::Reload() {
   }
   last_update_ = max_m;
   cache_syms_.clear();
-  so_handler_ = dlopen(max_so.c_str(), RTLD_NOW);
+  std::string new_so =
+      so_path_ + "/" + kSoPrefix + std::to_string(TNOWMS) + ".so";
+  rename(max_so.c_str(), new_so.c_str());
+  so_handler_ = dlopen(new_so.c_str(), RTLD_NOW);
   if (nullptr == so_handler_) {
-    TASKFLOW_CRITICAL("open dl error:{}", max_so);
+    TASKFLOW_CRITICAL("open dl error:{}", new_so);
     return false;
   }
 

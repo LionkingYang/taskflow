@@ -12,11 +12,8 @@
 using std::string;
 using std::unordered_map;
 using std::vector;
-long getCurrentTime() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
+
+constexpr char kFuncPrefix[] = "func_";
 namespace taskflow {
 
 TaskManager::TaskManager(std::shared_ptr<Graph> graph,
@@ -42,7 +39,7 @@ void TaskManager::Run() {
         auto t = [this, task] {
           // 执行用户设定的task
           if (const auto func =
-                  so_script_->GetFunc("func_" + task->GetTaskName());
+                  so_script_->GetFunc(kFuncPrefix + task->GetTaskName());
               func != nullptr) {
             input_context_->task_config[task->GetTaskName()] =
                 task->GetTaskConfig();

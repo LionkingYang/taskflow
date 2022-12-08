@@ -90,6 +90,7 @@ cc_library(
     ],
     deps = [
         "@com_github_absl//absl/strings",
+        "@com_github_absl//absl/time",
         "@com_github_fmtlib_fmt",
         "@com_github_spdlog",
         "@oneTBB//:tbb",

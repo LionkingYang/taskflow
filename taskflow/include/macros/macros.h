@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "taskflow/include/logger/logger.h"
+#include "taskflow/include/utils/time_hepler.h"
 
 #define KCFG_STRINGIZE(arg) KCFG_STRINGIZE1(arg)
 #define KCFG_STRINGIZE1(arg) KCFG_STRINGIZE2(arg)
@@ -875,3 +876,6 @@
     TASKFLOW_INFO("config of {} is {}:{}", KCFG_STRINGIZE2(task_name),       \
                   each.first, each.second);                                  \
   }
+
+#define TNOWMS taskflow::GetCurrentTimeMillis()
+#define TNOWS taskflow::GetCurrentTimeSeconds()

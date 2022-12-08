@@ -18,7 +18,7 @@
 
 namespace taskflow {
 
-class SoScript : taskflow::Singleton<SoScript> {
+class SoScript {
  public:
   using SymboleTable = taskflow::ConcurrentMap<std::string, void*>;
 
