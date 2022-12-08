@@ -33,6 +33,8 @@ def parse_op(op: str) -> list:
         raise Exception("op name dosen't found")
     op_name = op_name[0]
     op_read_input = re.findall(r"ReadTaskOutput\(([^(]*)\)", op)
+    op_read_input_mutable = re.findall(r"ReadTaskOutputMutable\(([^(]*)\)", op)
+    op_read_input.extend(op_read_input_mutable)
     input = []
     for each in op_read_input:
         params = each.split(",")

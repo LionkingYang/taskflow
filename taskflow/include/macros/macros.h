@@ -839,23 +839,32 @@
   func_map.emplace(#task_name, &task_func##task_name);
 #define RegisterFuncs(...) KCFG_FOR_EACH(RegisterFunc, __VA_ARGS__)
 #define ReadTaskOutputUnsafe(task_name, type) \
-  std::any_cast<type>(context.task_output[KCFG_STRINGIZE2(task_name)])
+  std::any_cast<type&>(context.task_output[KCFG_STRINGIZE2(task_name)])
 #define WriteTaskOutput(task_name, type) \
   context.task_output[KCFG_STRINGIZE2(task_name)]
 #define FinalOutput *(context.global_output)
-#define Input(type) std::any_cast<type>(context.global_input)
+#define Input(type) std::any_cast<const type&>(context.global_input)
 #define GetValue(type) std::make_any<type>
 #define WriteToOutput(task_name, type, result) \
   WriteTaskOutput(task_name, type) = GetValue(type)(result);
 #define WriteToFinalOutput(type, result) FinalOutput = GetValue(type)(result);
-#define ReadTaskOutput(task_name, type, out)                              \
-  try {                                                                   \
-    std::any_cast<type>(context.task_output[KCFG_STRINGIZE2(task_name)]); \
-  } catch (const std::bad_any_cast& e) {                                  \
-    TASKFLOW_CRITICAL("fetch task {} output has error, check again!",     \
-                      KCFG_STRINGIZE2(task_name));                        \
-  }                                                                       \
-  type out = ReadTaskOutputUnsafe(task_name, type);
+#define ReadTaskOutput(task_name, type, out)                               \
+  try {                                                                    \
+    std::any_cast<type&>(context.task_output[KCFG_STRINGIZE2(task_name)]); \
+  } catch (const std::bad_any_cast& e) {                                   \
+    TASKFLOW_CRITICAL("fetch task {} output has error, check again!",      \
+                      KCFG_STRINGIZE2(task_name));                         \
+  }                                                                        \
+  const type& out = ReadTaskOutputUnsafe(task_name, type);
+
+#define ReadTaskOutputMutable(task_name, type, out)                        \
+  try {                                                                    \
+    std::any_cast<type&>(context.task_output[KCFG_STRINGIZE2(task_name)]); \
+  } catch (const std::bad_any_cast& e) {                                   \
+    TASKFLOW_CRITICAL("fetch task {} output has error, check again!",      \
+                      KCFG_STRINGIZE2(task_name));                         \
+  }                                                                        \
+  type& out = ReadTaskOutputUnsafe(task_name, type);
 
 #define EndTask ;
 
@@ -865,7 +874,7 @@
   } catch (const std::bad_any_cast& e) {                                       \
     TASKFLOW_CRITICAL("fetch global input has error, the type doesn't match"); \
   }                                                                            \
-  type res = Input(type);
+  const type& res = Input(type);
 
 #define LoadTaskConfig(task_name, config)                      \
   const std::unordered_map<std::string, std::string>& config = \
