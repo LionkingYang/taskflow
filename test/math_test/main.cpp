@@ -31,6 +31,7 @@ void RunGraph() {
   auto output = std::any(0);
   for (int i = 0; i < 1000; i++) {
     auto input = std::any(static_cast<int>(random() % 100));
+    TASKFLOW_INFO("input is:{}", std::any_cast<int>(input));
     // 从热更新图里获取最新的图
     std::shared_ptr<Graph> graph =
         std::make_shared<Graph>(reloadable_graph.Get());

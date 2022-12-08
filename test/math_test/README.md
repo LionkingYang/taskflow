@@ -44,9 +44,10 @@ bazel run //:math_test
 得到以下结果：
 
 ```shell
-[2022-12-08 01:14:21.377] [info] [math_op.cpp:26] config of a is c:2
-[2022-12-08 01:14:21.377] [info] [math_op.cpp:26] config of a is a:1
-[2022-12-08 01:14:21.377] [info] [main.cpp:46] last res:6
-[2022-12-08 01:14:21.377] [info] [latency_guard.h:27] run graph cost 0.02475 ms.
+[2022-12-08 01:30:05.028] [info] [main.cpp:34] input is:21
+[2022-12-08 01:30:05.028] [info] [math_op.cpp:26] config of a is c:2
+[2022-12-08 01:30:05.028] [info] [math_op.cpp:26] config of a is a:1
+[2022-12-08 01:30:05.028] [info] [main.cpp:47] last res:48
+[2022-12-08 01:30:05.028] [info] [latency_guard.h:27] run graph cost 0.029875 ms.
 ```
 

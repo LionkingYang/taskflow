@@ -115,21 +115,21 @@ EndTask;
 
 ### 执行
 
-以下demo可以在test/recmd_test下找到，主要是模拟推荐服务中网关服务的调度过程：
+以下demo可以在test/recmd_test下找到，主要是模拟推荐服务中网关服务的调度过程(更简单的demo看这里:[math_demo](https://github.com/LionkingYang/taskflow/tree/main/test/math_test))：
 
 ```mermaid
 graph LR
-	A((ParseRequest)) --> B((UU))
-	A((ParseRequest)) --> C((BlackList))
-	B((UU)) --> D((RecallCB))
-	B((UU)) --> E((RecallEMB))
-	C((BlackList))-->D((RecallCB))
-	C((Blacklist))-->E((RecallEMB))
-	D((RecallCB))-->F((RecallMerge))
-	E((RecallEMB))-->F((RecallMerge))
-	F((RecallMerge))-->G((Rank))
-	G((Rank))-->H((Policy))
-	H((Policy))-->I((FillResponse))
+    A((ParseRequest)) --> B((UU))
+    A((ParseRequest)) --> C((BlackList))
+    B((UU)) --> D((RecallCB))
+    B((UU)) --> E((RecallEMB))
+    C((BlackList))-->D((RecallCB))
+    C((Blacklist))-->E((RecallEMB))
+    D((RecallCB))-->F((RecallMerge))
+    E((RecallEMB))-->F((RecallMerge))
+    F((RecallMerge))-->G((Rank))
+    G((Rank))-->H((Policy))
+    H((Policy))-->I((FillResponse))
 ```
 
 推荐的目录结构如图：
