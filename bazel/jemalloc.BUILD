@@ -16,6 +16,7 @@ configure_make(
     name = "libjemalloc",
     autogen = True,
     configure_in_place = True,
+    configure_options = ["--disable-initial-exec-tls"],
     lib_source = "@com_github_jemalloc//:all",
     out_static_libs = [
         "libjemalloc.a",
