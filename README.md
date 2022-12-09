@@ -34,6 +34,7 @@ TaskFlow的执行存在以下难点：
 - 简单易用的对象池
 - 简单易用的LatencyDebug工具
 - 简单易用的json解析接口
+- 支持jemalloc内存管理
 - ... ...
 
 ## 入门
