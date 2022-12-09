@@ -1,6 +1,9 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+def clean_dep(dep):
+    return str(Label(dep))
+
 def taskflow_workspace():
     git_repository(
         name = "oneTBB",
@@ -93,7 +96,7 @@ cc_library(
 
     http_archive(
         name = "com_github_jemalloc",
-        build_file = "//bazel:jemalloc.BUILD",
+        build_file = clean_dep("//bazel:jemalloc.BUILD"),
         strip_prefix = "jemalloc-5.3.0",
         urls = [
             "https://github.com/jemalloc/jemalloc/archive/5.3.0.zip",
