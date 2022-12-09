@@ -5,6 +5,7 @@ cc_binary(
     srcs = [
         "test/math_test/main.cpp",
     ],
+    malloc = "@com_github_jemalloc//:jemalloc",
     deps = ["//:task_flow_dep"],
 )
 
@@ -22,6 +23,7 @@ cc_binary(
     ],
     linkshared = True,
     linkstatic = True,
+    malloc = "@com_github_jemalloc//:jemalloc",
     deps = ["//:task_flow_dep"],
 )
 
@@ -37,6 +39,7 @@ cc_binary(
     ],
     linkshared = True,
     linkstatic = True,
+    malloc = "@com_github_jemalloc//:jemalloc",
     deps = ["//:task_flow_dep"],
 )
 
@@ -75,6 +78,7 @@ cc_binary(
         "-fPIC",
         "-ldl",
     ],
+    malloc = "@com_github_jemalloc//:jemalloc",
     deps = ["//:task_flow_dep"],
 )
 
@@ -92,6 +96,7 @@ cc_library(
         "@com_github_absl//absl/strings",
         "@com_github_absl//absl/time",
         "@com_github_fmtlib_fmt",
+        "@com_github_jemalloc//:jemalloc",
         "@com_github_spdlog",
         "@oneTBB//:tbb",
         "@rapidJson//:rapidjson",

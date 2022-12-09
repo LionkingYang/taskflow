@@ -83,3 +83,22 @@ git_repository(
     remote = "https://github.com/abseil/abseil-cpp.git",
     tag = "20211102.0",
 )
+
+http_archive(
+    name = "rules_foreign_cc",
+    strip_prefix = "rules_foreign_cc-0.9.0",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.9.0.zip",
+)
+
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+
+rules_foreign_cc_dependencies()
+
+http_archive(
+    name = "com_github_jemalloc",
+    build_file = "//bazel:jemalloc.BUILD",
+    strip_prefix = "jemalloc-5.3.0",
+    urls = [
+        "https://github.com/jemalloc/jemalloc/archive/5.3.0.zip",
+    ],
+)
