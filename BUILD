@@ -23,11 +23,10 @@ cc_binary(
     linkopts = [
         "-lpthread",
         "-rdynamic",
-        "-fPIC -shared -rdynamic",
+        "-fPIC -shared",
     ],
     linkshared = True,
     linkstatic = True,
-    malloc = "@com_github_jemalloc//:jemalloc",
     deps = ["//:task_flow_dep"],
 )
 
@@ -39,11 +38,10 @@ cc_binary(
     linkopts = [
         "-lpthread",
         "-rdynamic",
-        "-fPIC -shared -rdynamic",
+        "-fPIC -shared",
     ],
     linkshared = True,
     linkstatic = True,
-    # malloc = "@com_github_jemalloc//:jemalloc",
     deps = ["//:task_flow_dep"],
 )
 
@@ -55,7 +53,7 @@ cc_binary(
     linkopts = [
         "-lpthread",
         "-rdynamic",
-        "-fPIC -shared -rdynamic",
+        "-fPIC -shared",
     ],
     linkshared = True,
     linkstatic = True,
@@ -76,12 +74,6 @@ cc_binary(
         "test/recmd_test/**/*.cpp",
         "test/recmd_test/**/*.h",
     ]),
-    linkopts = [
-        "-lpthread",
-        "-rdynamic",
-        "-fPIC",
-        "-ldl",
-    ],
     malloc = "@com_github_jemalloc//:jemalloc",
     deps = ["//:task_flow_dep"],
 )

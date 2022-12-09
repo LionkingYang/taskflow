@@ -241,7 +241,7 @@ cc_binary(
     linkopts = [
         "-lpthread",
         "-rdynamic",
-        "-fPIC -shared -rdynamic",
+        "-fPIC -shared",
     ],
     linkshared = True,
     linkstatic = True,
@@ -266,12 +266,7 @@ cc_binary(
         "test/recmd_test/**/*.cpp",
         "test/recmd_test/**/*.h",
     ]),
-    linkopts = [
-        "-lpthread",
-        "-rdynamic",
-        "-fPIC",
-        "-ldl",
-    ],
+    malloc = "@com_github_jemalloc//:jemalloc", # 此处引入jemalloc支持
     deps = ["//:task_flow_dep"],
 )
 ```
@@ -314,6 +309,60 @@ cc_binary(
 2. 发布新的算子so到算子目录。
 
 **如上，涉及图结构的变动，是比较危险的，操作也比较复杂，因此不建议重要业务采取如此的方式，建议在验证完json和算子的合法性之后，关机重启更新。如果业务必须热更新，可以先准备好更新后的json和op文件，用check_ops.py和check_json_file.py检查无告警后再进行以上的两步热更新操作**
+
+### 使用此项目的bazel配置
+
+- 项目WORKSPACE中添加：
+
+  ```python
+  load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+  
+  git_repository(
+      name = "taskflow",
+      branch = "main",
+      remote = "https://github.com/LionkingYang/taskflow.git",
+  )
+  
+  load("@taskflow//:taskflow.bzl", "taskflow_workspace")
+  
+  taskflow_workspace()
+  
+  load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+  
+  rules_foreign_cc_dependencies()
+  ```
+
+- 项目BUILD文件示例:
+
+  ```python
+  cc_binary(
+      name = "math_test",
+      srcs = [
+          "main.cpp",
+      ],
+      malloc = "@com_github_jemalloc//:jemalloc",
+      deps = [
+          "@taskflow//:task_flow_dep",
+      ],
+  )
+  
+  cc_binary(
+      name = "math_op",
+      srcs = [
+          "ops/math_op.cpp",
+      ],
+      linkopts = [
+          "-lpthread",
+          "-rdynamic",
+          "-fPIC -shared",
+      ],
+      linkshared = True,
+      linkstatic = True,
+      deps = ["@taskflow//:task_flow_dep"],
+  )
+  ```
+
+  
 
 ## 实用工具
 
