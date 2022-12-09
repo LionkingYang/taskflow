@@ -115,7 +115,7 @@ BeginTask(RecallMerge) {
 EndTask
 
 BeginTask(Rank) {
-  ReadTaskOutput(RecallMerge, RecallResult, recall_result);
+  ReadTaskOutputMutable(RecallMerge, RecallResult, recall_result);
   for (auto& each : recall_result.recall_feeds) {
     each.score_map.emplace("aa", random() % 10 / 10.0);
     each.score_map.emplace("bb", random() % 10 / 10.0);
@@ -128,7 +128,7 @@ BeginTask(Rank) {
 EndTask
 
 BeginTask(Policy) {
-  ReadTaskOutput(Rank, RankResult, rank_result);
+  ReadTaskOutputMutable(Rank, RankResult, rank_result);
   std::sort(
       rank_result.rank_feeds.begin(), rank_result.rank_feeds.end(),
       [](Feed f1, Feed f2) { return f1.score_map["aa"] > f2.score_map["aa"]; });
@@ -139,7 +139,7 @@ BeginTask(Policy) {
 EndTask
 
 BeginTask(FillResponse) {
-  ReadTaskOutput(Policy, PolicyResult, policy_result);
+  ReadTaskOutputMutable(Policy, PolicyResult, policy_result);
   RecmdResponse response;
   response.feeds_list.swap(policy_result.policy_feeds);
   WriteToFinalOutput(RecmdResponse, response);
