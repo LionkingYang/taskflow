@@ -31,3 +31,21 @@
     }                                             \
                                                   \
   } while (0)
+
+#define TASKFLOW_DEBUG(...)                       \
+  do {                                            \
+    auto logger = spdlog::default_logger_raw();   \
+    if (logger->should_log(spdlog::level::err)) { \
+      SPDLOG_DEBUG(__VA_ARGS__);                  \
+    }                                             \
+                                                  \
+  } while (0)
+
+#define TASKFLOW_TRACE(...)                       \
+  do {                                            \
+    auto logger = spdlog::default_logger_raw();   \
+    if (logger->should_log(spdlog::level::err)) { \
+      SPDLOG_TRACE(__VA_ARGS__);                  \
+    }                                             \
+                                                  \
+  } while (0)

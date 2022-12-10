@@ -78,11 +78,11 @@ bool SoScript::Reload() {
   last_update_ = max_m;
   cache_syms_.clear();
   std::string new_so;
-  taskflow::StrAppend(&new_so, "/", kSoPrefix, TNOWMS, ".so");
+  taskflow::StrAppend(&new_so, so_path_, "/", kSoPrefix, TNOWMS, ".so");
   rename(max_so.c_str(), new_so.c_str());
   so_handler_ = dlopen(new_so.c_str(), RTLD_NOW);
   if (nullptr == so_handler_) {
-    TASKFLOW_CRITICAL("open dl error:{}", new_so);
+    TASKFLOW_CRITICAL("open dl error:{}, {}", new_so, dlerror());
     return false;
   }
 
