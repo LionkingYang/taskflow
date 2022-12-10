@@ -21,6 +21,7 @@
 #include "taskflow/include/logger/logger.h"
 #include "taskflow/include/reloadable/reloadable_object.h"
 #include "taskflow/include/utils/file_helper.h"
+#include "taskflow/include/utils/string_utils.h"
 #include "taskflow/include/utils/time_hepler.h"
 
 using namespace std::chrono_literals;
@@ -55,7 +56,8 @@ bool SoScript::Reload() {
   int64_t max_m = 0;
   for (const auto& each : dirs) {
     if (EndsWith(each, "so")) {
-      std::string so = so_path_ + "/" + each;
+      std::string so;
+      taskflow::StrAppend(&so, so_path_, "/", each);
       struct stat st;
       if (stat(so.c_str(), &st) != 0) {
         continue;
@@ -75,8 +77,8 @@ bool SoScript::Reload() {
   }
   last_update_ = max_m;
   cache_syms_.clear();
-  std::string new_so =
-      so_path_ + "/" + kSoPrefix + std::to_string(TNOWMS) + ".so";
+  std::string new_so;
+  taskflow::StrAppend(&new_so, "/", kSoPrefix, TNOWMS, ".so");
   rename(max_so.c_str(), new_so.c_str());
   so_handler_ = dlopen(new_so.c_str(), RTLD_NOW);
   if (nullptr == so_handler_) {

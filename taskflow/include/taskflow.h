@@ -37,7 +37,7 @@ class Task {
  public:
   explicit Task(const string& task_name, const string& config)
       : task_name_(task_name) {
-    config_map_ = split_twice(config, "|", "=");
+    config_map_ = taskflow::split_twice(config, "|", "=");
   }
   const string& GetTaskName() const { return task_name_; }
   const std::unordered_map<std::string, std::string>& GetTaskConfig() const {

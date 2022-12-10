@@ -153,15 +153,15 @@ std::string Graph::ToString() {
   std::string s;
   for (auto begin = dependency_map_.begin(); begin != dependency_map_.end();
        begin++) {
-    s += begin->first + ":" + std::to_string(begin->second) + "\n";
+    taskflow::StrAppend(&s, begin->first, ":", begin->second, "\n");
   }
   for (auto begin = dependend_map_.begin(); begin != dependend_map_.end();
        begin++) {
-    s += begin->first + ":";
+    taskflow::StrAppend(&s, begin->first, ":");
     for (const auto& each : begin->second) {
-      s += each->GetTaskName();
+      taskflow::StrAppend(&s, each->GetTaskName(), ",");
     }
-    s += "\n";
+    taskflow::StrAppend(&s, "\n");
   }
   return s;
 }
