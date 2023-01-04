@@ -26,9 +26,18 @@
             "config": "c=dd"
         },
         {
+            "task_name": "g",
+            "dependencies": [
+                "b"
+            ],
+            "op_name": "add_one",
+            "type": "int",
+            "config": "c=dd"
+        },
+        {
             "task_name": "d",
             "dependencies": [
-                "b",
+                "g",
                 "c"
             ],
             "op_name": "mult",
@@ -38,7 +47,27 @@
         {
             "task_name": "e",
             "dependencies": [
-                "d"
+                "d",
+                "a"
+            ],
+            "op_name": "add",
+            "type": "int",
+            "config": "c=dd"
+        },
+        {
+            "task_name": "f",
+            "dependencies": [
+                "e",
+                "g"
+            ],
+            "op_name": "add",
+            "type": "int",
+            "config": "c=dd"
+        },
+        {
+            "task_name": "h",
+            "dependencies": [
+                "f"
             ],
             "op_name": "write_output",
             "type": "int",

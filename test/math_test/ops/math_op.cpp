@@ -25,6 +25,7 @@ extern "C" {
 BEGIN_OP(add_one) {
   GET_INPUT(0, int, input0);
   int output = input0 + 1;
+  std::this_thread::sleep_for(50ms);
   return std::any(output);
 }
 
@@ -32,18 +33,30 @@ BEGIN_OP(mult) {
   GET_INPUT(0, int, input0);
   GET_INPUT(1, int, input1);
   LoadTaskConfig(task_name, config);
-  int output = input1 * input0;
+  int output = input0 * input1;
+  std::this_thread::sleep_for(50ms);
+  return std::any(output);
+}
+
+BEGIN_OP(add) {
+  GET_INPUT(0, int, input0);
+  GET_INPUT(1, int, input1);
+  LoadTaskConfig(task_name, config);
+  int output = input0 + input1;
+  std::this_thread::sleep_for(50ms);
   return std::any(output);
 }
 
 BEGIN_OP(fetch_input) {
   GetGlobalInput(int, global_input);
+  std::this_thread::sleep_for(50ms);
   return std::any(global_input);
 }
 
 BEGIN_OP(write_output) {
   GET_INPUT(0, int, input0);
   WriteToFinalOutput(int, input0);
+  std::this_thread::sleep_for(50ms);
   return std::any(0);
 }
 }

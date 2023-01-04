@@ -16,7 +16,8 @@ using std::vector;
 constexpr char kFuncPrefix[] = "func_";
 namespace taskflow {
 
-TaskManager::TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script, const std::any& input,
+TaskManager::TaskManager(std::shared_ptr<Graph> graph,
+                         taskflow::SoScript* so_script, const std::any& input,
                          std::any* output) {
   work_manager_ = std::make_shared<taskflow::WorkManager>();
   graph_ = graph;
@@ -30,31 +31,37 @@ void TaskManager::Run() {
   while (true) {
     for (const auto& task : graph_->GetTasks()) {
       // 找出没有前置依赖并且还没执行的task
-      if (predecessor_count_[task->GetTaskName()] == 0 && !map_in_progress_.find(task->GetTaskName())) {
+      if (predecessor_count_[task->GetTaskName()] == 0 &&
+          !map_in_progress_.find(task->GetTaskName())) {
         // 设置执行状态为true
         map_in_progress_.emplace(task->GetTaskName(), 1);
         // 构建task任务
         auto t = [this, task] {
-          TASKFLOW_INFO("Task {}", task->GetTaskName());
-          std::lock_guard<std::mutex> lock(mu_);
           // 执行用户设定的task
-          if (const auto func = so_script_->GetFunc(kFuncPrefix + task->GetOpName()); func != nullptr) {
+          if (const auto func =
+                  so_script_->GetFunc(kFuncPrefix + task->GetOpName());
+              func != nullptr) {
             vector<std::string> input;
             for (const auto& each : task->GetPredecessors()) {
               input.emplace_back(each->GetTaskName());
             }
-            input_context_->task_config[task->GetTaskName()] = task->GetTaskConfig();
-            input_context_->task_output[task->GetTaskName()] = func(*input_context_, input, task->GetTaskName());
+            input_context_->task_config[task->GetTaskName()] =
+                task->GetTaskConfig();
+            input_context_->task_output[task->GetTaskName()] =
+                func(*input_context_, input, task->GetTaskName());
           } else {
             TASKFLOW_ERROR("func of {} is empty!", task->GetTaskName());
           }
           // 执行完之后，更新依赖此task任务的依赖数
-          if (graph_->GetSuccessorMap()->find(task->GetTaskName())) {
-            for (const auto& each : graph_->GetSuccessorMap()->at(task->GetTaskName())) {
-              predecessor_count_[each->GetTaskName()]--;
+          {
+            std::lock_guard<std::mutex> lock(mu_);
+            if (graph_->GetSuccessorMap()->find(task->GetTaskName())) {
+              for (const auto& each :
+                   graph_->GetSuccessorMap()->at(task->GetTaskName())) {
+                predecessor_count_[each->GetTaskName()]--;
+              }
             }
           }
-          TASKFLOW_INFO("finish task {}", task->GetTaskName());
           // 更新finish数组
           finish_num_.fetch_add(1);
         };
@@ -98,7 +105,8 @@ void Graph::CircleCheck() {
   while (true) {
     bool found = false;
     for (const auto& task : tasks_) {
-      if (tmp_predecessor_count[task->GetTaskName()] == 0 && !map_finish.find(task->GetTaskName())) {
+      if (tmp_predecessor_count[task->GetTaskName()] == 0 &&
+          !map_finish.find(task->GetTaskName())) {
         for (auto each : successor_map[task->GetTaskName()]) {
           tmp_predecessor_count[each->GetTaskName()]--;
         }
@@ -129,7 +137,8 @@ bool Graph::BuildFromJson(const string& json_path) {
   unordered_map<string, TaskPtr> task_map;
   // 遍历一遍，拿到task列表
   for (const auto& each : jobs.tasks) {
-    TaskPtr A = std::make_shared<Task>(each.task_name, each.op_name, each.config);
+    TaskPtr A =
+        std::make_shared<Task>(each.task_name, each.op_name, each.config);
     task_map.emplace(each.task_name, A);
     tasks_.emplace_back(A);
   }
@@ -146,10 +155,12 @@ bool Graph::BuildFromJson(const string& json_path) {
 
 std::string Graph::ToString() {
   std::string s;
-  for (auto begin = predecessor_count_.begin(); begin != predecessor_count_.end(); begin++) {
+  for (auto begin = predecessor_count_.begin();
+       begin != predecessor_count_.end(); begin++) {
     taskflow::StrAppend(&s, begin->first, ":", begin->second, "\n");
   }
-  for (auto begin = successor_map_.begin(); begin != successor_map_.end(); begin++) {
+  for (auto begin = successor_map_.begin(); begin != successor_map_.end();
+       begin++) {
     taskflow::StrAppend(&s, begin->first, ":");
     for (const auto& each : begin->second) {
       taskflow::StrAppend(&s, each->GetTaskName(), ",");
@@ -161,7 +172,8 @@ std::string Graph::ToString() {
 
 std::string TaskManager::ToString() {
   std::string s;
-  for (auto begin = predecessor_count_.begin(); begin != predecessor_count_.end(); begin++) {
+  for (auto begin = predecessor_count_.begin();
+       begin != predecessor_count_.end(); begin++) {
     taskflow::StrAppend(&s, begin->first, ":", begin->second, "\n");
   }
   return s;

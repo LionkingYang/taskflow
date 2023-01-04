@@ -36,13 +36,16 @@ class Task;
 using TaskPtr = std::shared_ptr<Task>;
 class Task {
  public:
-  explicit Task(const string& task_name, const string& op_name, const string& config)
+  explicit Task(const string& task_name, const string& op_name,
+                const string& config)
       : task_name_(task_name), op_name_(op_name) {
     config_map_ = taskflow::split_twice(config, "|", "=");
   }
   const string& GetTaskName() const { return task_name_; }
   const string& GetOpName() const { return op_name_; }
-  const std::unordered_map<std::string, std::string>& GetTaskConfig() const { return config_map_; }
+  const std::unordered_map<std::string, std::string>& GetTaskConfig() const {
+    return config_map_;
+  }
   int GetPredecessorCount() const { return predecessors_.size(); }
   const vector<TaskPtr>& GetPredecessors() const { return predecessors_; }
 
@@ -72,8 +75,12 @@ class Graph {
     return !GetCircle();
   }
 
-  const taskflow::ConcurrentMap<string, vector<TaskPtr>>* GetSuccessorMap() { return &successor_map_; }
-  taskflow::ConcurrentMap<string, int> GetPredecessorCount() { return predecessor_count_; }
+  const taskflow::ConcurrentMap<string, vector<TaskPtr>>* GetSuccessorMap() {
+    return &successor_map_;
+  }
+  taskflow::ConcurrentMap<string, int> GetPredecessorCount() {
+    return predecessor_count_;
+  }
 
   const vector<TaskPtr>& GetTasks() { return tasks_; }
 
@@ -97,7 +104,8 @@ class Graph {
 class TaskManager {
  public:
   // 使用已经建立好依赖关系的tasks列表进行初始化
-  TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script, const std::any& input, std::any* output);
+  TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script,
+              const std::any& input, std::any* output);
   void Run();
   ~TaskManager() { Clear(); }
   void Clear();
