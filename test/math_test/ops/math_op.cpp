@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "taskflow/include/logger/logger.h"
+#include "taskflow/include/macros/macros.h"
 #include "taskflow/include/taskflow.h"
 
 using taskflow::Graph;
@@ -21,47 +22,28 @@ using taskflow::TaskManager;
 using namespace std::chrono_literals;
 extern "C" {
 
-BeginTask(a) {
-  GetGlobalInput(int, res);
-  DebugConfig(a);
-  int res_a = res + 1;
-  WriteToOutput(a, int, res_a);
+BEGIN_OP(add_one) {
+  GET_INPUT(0, int, input0);
+  int output = input0 + 1;
+  return std::any(output);
 }
-EndTask;
 
-BeginTask(b) {
-  ReadTaskOutput(a, int, res_a);
-  int res_b = res_a + 1;
-  WriteToOutput(b, int, res_b);
+BEGIN_OP(mult) {
+  GET_INPUT(0, int, input0);
+  GET_INPUT(1, int, input1);
+  LoadTaskConfig(task_name, config);
+  int output = input1 * input0;
+  return std::any(output);
 }
-EndTask;
 
-BeginTask(c) {
-  ReadTaskOutput(a, int, res_a);
-  int res_c = res_a + 1;
-  WriteToOutput(c, int, res_c);
+BEGIN_OP(fetch_input) {
+  GetGlobalInput(int, global_input);
+  return std::any(global_input);
 }
-EndTask;
 
-BeginTask(d) {
-  ReadTaskOutput(b, int, res_b);
-  ReadTaskOutput(c, int, res_c);
-  int res_d = res_b + res_c;
-  WriteToOutput(d, int, res_d);
+BEGIN_OP(write_output) {
+  GET_INPUT(0, int, input0);
+  WriteToFinalOutput(int, input0);
+  return std::any(0);
 }
-EndTask;
-
-BeginTask(e) {
-  ReadTaskOutput(d, int, res_d);
-  int res_e = res_d + 1;
-  WriteToOutput(e, int, res_e);
-}
-EndTask;
-
-BeginTask(f) {
-  ReadTaskOutput(e, int, res_e);
-  int res_f = res_e + 1;
-  WriteToFinalOutput(int, res_f);
-}
-EndTask;
 }

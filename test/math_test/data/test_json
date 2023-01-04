@@ -2,6 +2,7 @@
     "tasks": [
         {
             "task_name": "a",
+            "op_name": "fetch_input",
             "dependencies": [],
             "config": "a=1|c=2",
             "type": "int"
@@ -11,33 +12,37 @@
             "dependencies": [
                 "a"
             ],
+            "op_name": "add_one",
             "type": "int",
             "config": "c=dd"
         },
         {
             "task_name": "c",
             "dependencies": [
-                "a"
-            ]
+                "b"
+            ],
+            "op_name": "add_one",
+            "type": "int",
+            "config": "c=dd"
         },
         {
             "task_name": "d",
             "dependencies": [
                 "b",
                 "c"
-            ]
+            ],
+            "op_name": "mult",
+            "type": "int",
+            "config": "c=dd"
         },
         {
             "task_name": "e",
             "dependencies": [
                 "d"
-            ]
-        },
-        {
-            "task_name": "f",
-            "dependencies": [
-                "e"
-            ]
+            ],
+            "op_name": "write_output",
+            "type": "int",
+            "config": "c=dd"
         }
     ]
 }

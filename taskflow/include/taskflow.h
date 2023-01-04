@@ -25,6 +25,7 @@
 #include "taskflow/include/so_handler/so_handler.h"
 #include "taskflow/include/utils/string_utils.h"
 #include "taskflow/include/work_manager/work_manager.h"
+using std::atomic;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -35,23 +36,23 @@ class Task;
 using TaskPtr = std::shared_ptr<Task>;
 class Task {
  public:
-  explicit Task(const string& task_name, const string& config)
-      : task_name_(task_name) {
+  explicit Task(const string& task_name, const string& op_name, const string& config)
+      : task_name_(task_name), op_name_(op_name) {
     config_map_ = taskflow::split_twice(config, "|", "=");
   }
   const string& GetTaskName() const { return task_name_; }
-  const std::unordered_map<std::string, std::string>& GetTaskConfig() const {
-    return config_map_;
-  }
-  int GetDependencyCount() const { return dependencies_.size(); }
-  const vector<TaskPtr>& GetDependencies() const { return dependencies_; }
+  const string& GetOpName() const { return op_name_; }
+  const std::unordered_map<std::string, std::string>& GetTaskConfig() const { return config_map_; }
+  int GetPredecessorCount() const { return predecessors_.size(); }
+  const vector<TaskPtr>& GetPredecessors() const { return predecessors_; }
 
-  void AddDependecy(TaskPtr task) { dependencies_.emplace_back(task); }
+  void AddPredecessor(TaskPtr task) { predecessors_.emplace_back(task); }
 
  private:
   const string task_name_;
+  const string op_name_;
   std::unordered_map<std::string, std::string> config_map_;
-  vector<TaskPtr> dependencies_;
+  vector<TaskPtr> predecessors_;
 };
 
 class Graph {
@@ -59,8 +60,8 @@ class Graph {
   Graph() {}
   bool Init(const string& graph_path) {
     is_circle_ = false;
-    dependency_map_.clear();
-    dependend_map_.clear();
+    predecessor_count_.clear();
+    successor_map_.clear();
     map_finish_.clear();
     tasks_.clear();
     if (!BuildFromJson(graph_path)) {
@@ -71,12 +72,8 @@ class Graph {
     return !GetCircle();
   }
 
-  const taskflow::ConcurrentMap<string, vector<TaskPtr>>* GetDependendMap() {
-    return &dependend_map_;
-  }
-  const taskflow::ConcurrentMap<string, int> GetDependencyMap() {
-    return dependency_map_;
-  }
+  const taskflow::ConcurrentMap<string, vector<TaskPtr>>* GetSuccessorMap() { return &successor_map_; }
+  taskflow::ConcurrentMap<string, int> GetPredecessorCount() { return predecessor_count_; }
 
   const vector<TaskPtr>& GetTasks() { return tasks_; }
 
@@ -90,8 +87,8 @@ class Graph {
   void CircleCheck();
 
  private:
-  taskflow::ConcurrentMap<string, int> dependency_map_;
-  taskflow::ConcurrentMap<string, vector<TaskPtr>> dependend_map_;
+  taskflow::ConcurrentMap<string, int> predecessor_count_;
+  taskflow::ConcurrentMap<string, vector<TaskPtr>> successor_map_;
   taskflow::ConcurrentMap<string, int> map_finish_;
   vector<TaskPtr> tasks_;
   bool is_circle_ = false;
@@ -100,18 +97,18 @@ class Graph {
 class TaskManager {
  public:
   // 使用已经建立好依赖关系的tasks列表进行初始化
-  TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script,
-              const std::any& input, std::any* output);
+  TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script, const std::any& input, std::any* output);
   void Run();
   ~TaskManager() { Clear(); }
   void Clear();
 
  private:
   void HandleTask(const taskflow::TaskPtr task);
+  string ToString();
 
  private:
   std::shared_ptr<taskflow::WorkManager> work_manager_;
-  taskflow::ConcurrentMap<string, int> dependency_map_;
+  taskflow::ConcurrentMap<string, int> predecessor_count_;
   std::shared_ptr<Graph> graph_;
   taskflow::SoScript* so_script_;
   taskflow::ConcurrentMap<string, int> map_in_progress_;
