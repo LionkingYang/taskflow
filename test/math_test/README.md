@@ -4,14 +4,16 @@
 
 ```mermaid
 graph LR
-    input(input) --> a((a=input+1))
-    a((a=input+1))-->b((b=a+1))
-    a((a=input+1))-->c((c=a+1))
-    b((b=a+1))-->d((d=b+c))
-    c((c=a+1))-->d((d=b+c))
-    d((d=b+c))-->e((e=d+1))
-    e((e=d+1))-->f((f=e+1))
-    f((f=e+1))-->output(output)
+   a((a:fetch_input)) --> b((b:add_one))
+b((b:add_one)) --> c((c:add_one))
+b((b:add_one)) --> g((g:add_one))
+g((g:add_one)) --> d((d:mult))
+c((c:add_one)) --> d((d:mult))
+d((d:mult)) --> e((e:add))
+a((a:fetch_input)) --> e((e:add))
+e((e:add)) --> f((f:add))
+g((g:add_one)) --> f((f:add))
+f((f:add)) --> h((h:write_output))
 ```
 
 编译算子:
