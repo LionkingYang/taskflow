@@ -19,7 +19,6 @@ namespace taskflow {
 TaskManager::TaskManager(std::shared_ptr<Graph> graph,
                          taskflow::SoScript* so_script, const std::any& input,
                          std::any* output) {
-  // work_manager_ = std::make_shared<taskflow::WorkManager>();
   graph_ = graph;
   so_script_ = so_script;
   input_context_ = new TaskContext(input, output);
@@ -68,8 +67,7 @@ void TaskManager::Run() {
           // 更新finish数组
           finish_num_.fetch_add(1);
         };
-        // 随机选取worker执行task
-        // work_manager_->Execute(t);
+        // 选取worker执行task
         taskflow::WorkManager::GetInstance()->Execute(t);
       }
     }
