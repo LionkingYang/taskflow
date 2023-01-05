@@ -9,19 +9,17 @@
 #include <vector>
 
 #include "oneapi/tbb/task_group.h"
+#include "taskflow/include/container/singleton.h"
 
 using std::vector;
 using AnyFunc = std::function<void(void)>;
 namespace taskflow {
-class WorkManager {
+class WorkManager : public Singleton<WorkManager> {
  public:
   WorkManager() {}
-  ~WorkManager() { tg_.wait(); }
+  ~WorkManager() noexcept { tg_.wait(); }
 
-  void Execute(AnyFunc task) {
-    // 随机选取worker执行task
-    tg_.run(task);
-  }
+  void Execute(AnyFunc task) { tg_.run(task); }
 
  private:
   tbb::task_group tg_;

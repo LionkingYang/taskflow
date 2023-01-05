@@ -12,9 +12,7 @@
 
 #include "taskflow/include/common_struct/task_struct.h"
 #include "taskflow/include/container/concurrent_map.h"
-#include "taskflow/include/container/singleton.h"
 #include "taskflow/include/utils/class_helper.h"
-#include "taskflow/include/work_manager/work_manager.h"
 
 namespace taskflow {
 
@@ -36,7 +34,6 @@ class SoScript {
   bool Reload();
   int running_ = false;
   std::string so_path_;
-  tbb::task_group worker_;
   SymboleTable cache_syms_;
   int64_t last_update_ = 0;
   void* so_handler_ = nullptr;

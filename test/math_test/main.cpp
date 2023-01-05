@@ -30,7 +30,7 @@ void RunGraph() {
   taskflow::SoScript so_script(script_path);
   // 初始化总的输入和输出
   auto output = std::any(0);
-  for (int i = 0; i < 10000; i++) {
+  for (int i = 0; i < 10; i++) {
     auto input = std::any(static_cast<int>(random() % 100));
     TASKFLOW_INFO("{} input is:{}", i, std::any_cast<int>(input));
     // 从热更新图里获取最新的图
