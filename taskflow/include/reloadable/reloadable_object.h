@@ -23,7 +23,6 @@ template <typename T>
 class ReloadableObj {
  public:
   explicit ReloadableObj(std::string path) : path_(path) {
-    worker_ = std::make_shared<taskflow::WorkManager>();
     Load();
     running_ = true;
     Run();
@@ -57,13 +56,12 @@ class ReloadableObj {
         std::this_thread::sleep_for(2000ms);
       }
     };
-    worker_->Execute(sync_func);
+    taskflow::WorkManager::GetInstance()->Execute(sync_func);
   }
 
   inline const T& Get() { return double_confs_.Get(); }
 
  private:
-  std::shared_ptr<taskflow::WorkManager> worker_;
   DoubleBuffer<T> double_confs_;
   bool running_ = false;
   std::string path_;

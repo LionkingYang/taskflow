@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "taskflow/include/logger/logger.h"
+#include "taskflow/include/macros/macros.h"
 #include "taskflow/include/taskflow.h"
 
 using taskflow::Graph;
@@ -21,47 +22,68 @@ using taskflow::TaskManager;
 using namespace std::chrono_literals;
 extern "C" {
 
-BeginTask(a) {
-  GetGlobalInput(int, res);
-  DebugConfig(a);
-  int res_a = res + 1;
-  WriteToOutput(a, int, res_a);
+BEGIN_OP(add_num) {
+  GET_INPUT(0, int, input0);
+  GET_CONFIG_KEY("num", int, num, 0);
+  int output = input0 + num;
+  RETURN_VAL(output);
 }
-EndTask;
+END_OP
 
-BeginTask(b) {
-  ReadTaskOutput(a, int, res_a);
-  int res_b = res_a + 1;
-  WriteToOutput(b, int, res_b);
+BEGIN_OP(mult_num) {
+  GET_INPUT(0, int, input0);
+  GET_CONFIG_KEY("num", int, num, 0);
+  int output = input0 * num;
+  RETURN_VAL(output);
 }
-EndTask;
+END_OP
 
-BeginTask(c) {
-  ReadTaskOutput(a, int, res_a);
-  int res_c = res_a + 1;
-  WriteToOutput(c, int, res_c);
+BEGIN_OP(mult) {
+  GET_INPUT(0, int, input0);
+  GET_INPUT(1, int, input1);
+  int output = input0 * input1;
+  RETURN_VAL(output);
 }
-EndTask;
+END_OP
 
-BeginTask(d) {
-  ReadTaskOutput(b, int, res_b);
-  ReadTaskOutput(c, int, res_c);
-  int res_d = res_b + res_c;
-  WriteToOutput(d, int, res_d);
+BEGIN_OP(add) {
+  GET_INPUT(0, int, input0);
+  GET_INPUT(1, int, input1);
+  int output = input0 + input1;
+  RETURN_VAL(output);
 }
-EndTask;
+END_OP
 
-BeginTask(e) {
-  ReadTaskOutput(d, int, res_d);
-  int res_e = res_d + 1;
-  WriteToOutput(e, int, res_e);
+BEGIN_OP(accum_add) {
+  GET_INPUT_TO_VEC(int, input_list);
+  int res = 0;
+  for (const auto& each : input_list) {
+    res += each;
+  }
+  RETURN_VAL(res);
 }
-EndTask;
+END_OP
 
-BeginTask(f) {
-  ReadTaskOutput(e, int, res_e);
-  int res_f = res_e + 1;
-  WriteToFinalOutput(int, res_f);
+BEGIN_OP(accum_mult) {
+  GET_INPUT_TO_VEC(int, input_list);
+  int res = 1;
+  for (const auto& each : input_list) {
+    res *= each;
+  }
+  RETURN_VAL(res);
 }
-EndTask;
+END_OP
+
+BEGIN_OP(fetch_input) {
+  GET_GLOBAL_INPUT(int, global_input);
+  RETURN_VAL(global_input);
+}
+END_OP
+
+BEGIN_OP(write_output) {
+  GET_INPUT(0, int, input0);
+  WRITE_TO_FINAL_OUTPUT(int, input0);
+  RETURN_VAL(0);
+}
+END_OP
 }

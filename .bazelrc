@@ -1,3 +1,5 @@
 build --cxxopt="--std=c++17"
 build --jobs=8
 build --copt=-O2
+# build --strip=never
+# build --copt=-g

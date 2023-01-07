@@ -26,6 +26,7 @@ TaskFlow的执行存在以下难点：
 同时，本框架还提供这些功能：
 
 - 简单的算子编写体验
+- 算子支持可复用
 - 根据图配置，一键生成算子和项目代码
 - 算子和图配置的相互校验
 - 算子和图的热更新
@@ -50,71 +51,74 @@ TaskFlow的执行存在以下难点：
     "tasks": [{
         "task_name": "",
         "dependencies": [],
-        "type": "int",
+        "op_name": "",
         "use_input": "1",
         "config": "a=1|b=2",
-        "final_output*": "1"
+        "final_output": "1"
     }]
 }
 ```
 
-- input_type: **可选**。全局输入的数据类型，如果填写了此字段，自动生成项目算子代码时会在**GetGlobalInput**获取全局输入时自动填充此类型。
-- output_type: **可选**。全局输出的数据类型，如果填写了此字段，自动生成项目算子代码时会在**WriteToFinalOutput**写入全局输出时自动填充此类型。
+- input_type: **可选**。全局输入的数据类型，如果填写了此字段，自动生成项目算子代码时会在**GET_GLOBAL_INPUT**获取全局输入时自动填充此类型。
+- output_type: **可选**。全局输出的数据类型，如果填写了此字段，自动生成项目算子代码时会在**WRITE_TO_FINAL_OUTPUT**写入全局输出时自动填充此类型。
 - tasks: **必填**。数组，内部填充所有的任务描述。
-- task_name: **必填**。任务名，**任务唯一标识**，此任务名应与算子中对应的算子名一致。
+- task_name: **必填**。任务名，**任务唯一标识**。
 - dependencies: **必填，可为空**。任务依赖，数组。此任务依赖的其他任务，内填写其他任务的task_name。
-- type: **可选**。任务输出的数据类型。如果填写了此字段，自动生成项目算子代码时会在**ReadTaskOutput**获取该算子输出时自动填充此类型。
-- use_input: **可选**。是否使用全局输入。如果填写了此字段且字段值为"1"，自动生成项目算子代码时，该算子中会出现**GetGlobalInput**宏。
-- config: **可选**。配置格式：**k1=v1|k2=v2|k3=v3**。任务的配置，注入算子的配置，可在算子中直接用宏**LoadTaskConfig**获取，获取后的配置为**unordered_map**格式:{"k1":"v1", "k2":"v2", "k3":"v3"}。
-- final_output: **可选，但是只能有一个算子设置**。全图只能有一个对外输出算子， 如果填写了此字段且字段值为"1"，自动生成项目算子代码时，该算子中会出现**WriteToFinalOutput**宏。
+- op_name: **必填**。 此处为任务具体执行的算子名。
+- use_input: **可选**。是否使用全局输入。如果填写了此字段且字段值为"1"，自动生成项目算子代码时，该算子中会出现**GET_GLOBAL_INPUT**宏。
+- config: **可选**。配置格式：**k1=v1|k2=v2|k3=v3**。任务的配置，注入算子的配置，可在算子中直接用宏**GET_CONFIG_KEY**获取。
+- final_output: **可选，但是只能有一个算子设置**。全图只能有一个对外输出算子， 如果填写了此字段且字段值为"1"，自动生成项目算子代码时，该算子中会出现**WRITE_TO_FINAL_OUTPUT**宏。
 
 ### 算子编写
 
 基于多种宏的支持，算子编写十分简单，具体结构如下（下图为自动生成算子）：
 
 ```c++
-BeginTask(a) {
-  LoadTaskConfig(a, conf);
+BEGIN_OP(a) {
   GetGlobalInput(int, input_name);
   // write your code here
-  WriteToOutput(a, int, a_output);
+  RETURN_VAL();
 }
-EndTask;
-BeginTask(b) {
-  LoadTaskConfig(b, conf);
-  ReadTaskOutput(a, int, a_output);
+END_OP
+
+BEGIN_OP(b) {
+  GET_INPUT(0, int, a_output);
+  GET_CONFIG_KEY("num", int, value, 0);
   // write your code here
-  WriteToOutput(b, int, b_output);
+  WRITE_TO_OUTPUT(b, int, b_output);
+  RETURN_VAL();
 }
-EndTask;
-BeginTask(e) {
-  LoadTaskConfig(e, conf);
-  ReadTaskOutput(b, int, d_output);
+END_OP
+
+BEGIN_OP(e) {
+  GET_INPUT(0, int, a_output);
   // write your code here
-  WriteToFinalOutput(int, final_output);
+  WRITE_TO_FINAL_OUTPUT(int, final_output);
+  RETURN_VAL();
 }
-EndTask;
+END_OP
 ```
 
 其中比较重要的宏：
 
-- **BeginTask(task_name) { ... ...} EndTask;** 该宏为一对组合，标记着任务算子的开始与结束，其中BeginTask()括号中填写任务名，**该任务名应与图配置文件中的任务名对应**。
+- **BEGIN_OP(op_name) { ... ...} END_OP;** 该宏为一对组合，标记着任务算子的开始与结束，其中BEGIN_OP()括号中填写算子，**该算子名应与图配置文件中的op_name对应**。
 
-- **LoadTaskConfig(task_name， conf)** 该宏读取对应的算子配置，并且把数据赋值给conf，conf为一个unordered_map。
+- **GET_CONFIG_KEY(key, type, output, default_v** 该宏读取key键对应的算子配置，并且将结果赋值给output。读取key的配置，并且转化为type类型(目前支持:string, double, int, float），如果类型转换失败或者未配置，返回default_v。
 
-- **DebugConfig(task_name)** debug宏，遍历算子配置并且打印log。
+- **DEBUG_CONFIG(task_name)** debug宏，遍历算子配置并且打印log。
 
-- **GetGlobalInput(type, input_name)** 获取图的全局输入，并且赋值给type类型的input_name变量，**为const引用，不可修改**。此处需要注意type类型需要与算子的全局输入一致，否则会有bad_cast错误的风险。(**采用自动生成的算子可以规避此风险**)
+- **GET_GLOBAL_INPUT(type, input_name)** 获取图的全局输入，并且赋值给type类型的input_name变量，**为const引用，不可修改**。此处需要注意type类型需要与算子的全局输入一致，否则会有bad_cast错误的风险。(**采用自动生成的算子可以规避此风险**)
 
-- **ReadTaskOutput(task_name, type, task_output)** 获取task_name算子的输入，并且赋值给type类型的名为task_output的变量上，**为const引用，不可修改**。此处也需注意type类型需要与算子真实的输出类型一致，否则会有bad_cast的风险，同时也需要保证在算子里只获取图配置里定义的依赖算子的输出，如：a算子依赖b, c算子的数据，那么在a算子中只能读取b,c算子的数据，否则会有bad_cast的风险。(**采用自动生成的算子可以规避此风险**)
+- **GET_OUTPUT(index, type, task_output)** 获取算子的第index个输入，并且赋值给type类型的名为task_output的变量上，**为const引用，不可修改**。此处需要注意index大小不能超过实际的输入大小，如a任务使用了op_a算子，并且a任务依赖b，c任务，那么op_a算子的输入大小不大于2，所以index不能超过1。并且这里的输入参数顺序和json文件中依赖算子的顺序一致。(**采用自动生成的算子可以规避此风险**)
 
-- **ReadTaskOutputMutable(task_name, type, task_output)** 和ReadTaskOutput用法类似，但是返回的是非const引用，主要是为了一些业务场景可能需要直接swap上游算子的结果考虑，不建议频繁使用。
+- **GET_OUTPUT_MUTABLE(task_name, type, task_output)** 和GET_OUTPUT用法类似，但是返回的是非const引用，主要是为了一些业务场景可能需要直接swap上游算子的结果考虑，不建议频繁使用。
 
-- **WriteToOutput(task_name, type, task_output)** 将type类型名为task_output的变量值赋值给任务的输出。此处赋值之后，依赖该任务的其他任务可以通过**ReadTaskOutput** 算子获取到该算子的输出。
+- **GET_INPUT_TO_VEC（type, output_list)** 将输入参数转化为type类型的vector，赋值到output_list参数中。这个宏主要是为了解决某些算子输入参数长度不固定的情况，并且需要保证上游任务给到该算子的数据类型都是一致的。
 
-- **WriteToFinalOutput(type, final_output)** 将type类型名为final_output的变量值赋给全局输出。此处需要注意type需与你定义的全局输出类型一致，否则会有bad_cast的风险。 (**采用自动生成的算子可以规避此风险**)
+- **WRITE_TO_FINAL_OUTPUT(type, final_output)** 将type类型名为final_output的变量值赋给全局输出。此处需要注意type需与你定义的全局输出类型一致，否则会有bad_cast的风险。 (**采用自动生成的算子可以规避此风险**)
 
-  **需要注意上面提到的input_name，task_output，final_output均可以随意自定义变量名，并不是必须写死这几个，对于input数据，ReadTaskOutput算子和GetGlobalInput算子都会对变量进行定义，因此直接取用赋值就行；但是对于需要写进output的变量，如task_output，final_output，在业务代码里需要先定义，不然会出现编译问题**
+- **RETURN_VAL(output)** return语句，展开为:return std::any(output) 如果该算子不需要return结果，可以直接RETURN_VAL(0)。
+
 
 ### 执行
 
@@ -122,17 +126,17 @@ EndTask;
 
 ```mermaid
 graph LR
-    A((ParseRequest)) --> B((UU))
-    A((ParseRequest)) --> C((BlackList))
-    B((UU)) --> D((RecallCB))
-    B((UU)) --> E((RecallEMB))
-    C((BlackList))-->D((RecallCB))
-    C((Blacklist))-->E((RecallEMB))
-    D((RecallCB))-->F((RecallMerge))
-    E((RecallEMB))-->F((RecallMerge))
-    F((RecallMerge))-->G((Rank))
-    G((Rank))-->H((Policy))
-    H((Policy))-->I((FillResponse))
+   ParseRequest((ParseRequest:ParseRequest)) --> UU((UU:UU))
+ParseRequest((ParseRequest:ParseRequest)) --> BlackList((BlackList:BlackList))
+UU((UU:UU)) --> RecallCB((RecallCB:RecallOP))
+BlackList((BlackList:BlackList)) --> RecallCB((RecallCB:RecallOP))
+UU((UU:UU)) --> RecallEMB((RecallEMB:RecallOP))
+BlackList((BlackList:BlackList)) --> RecallEMB((RecallEMB:RecallOP))
+RecallCB((RecallCB:RecallOP)) --> RecallMerge((RecallMerge:RecallMerge))
+RecallEMB((RecallEMB:RecallOP)) --> RecallMerge((RecallMerge:RecallMerge))
+RecallMerge((RecallMerge:RecallMerge)) --> Rank((Rank:Rank))
+Rank((Rank:Rank)) --> Policy((Policy:Policy))
+Policy((Policy:Policy)) --> FillResponse((FillResponse:FillResponse))
 ```
 
 推荐的目录结构如图：
@@ -298,17 +302,13 @@ cc_binary(
 
 #### 涉及图结构的变化  
 
-这种情况下比较复杂，由于算子中对图的输入输出存在强依赖的关系，因此线上热更新不支持对现有的任务进行依赖的重新组织（即A-->B变为B-->A这种类似的依赖变动）。目前支持以下两种情况：
+1. 新增算子
+在op文件中新增算子，编译之后发布到项目的so目录下即可。
+2. 新增任务&&修改依赖关系
+修改图的json文件，增加算子的依赖关系即可。
 
-1. 算子A与算子B之前没有依赖，添加A-->B的依赖
-2. 目前没有C算子，新增一个C算子。
 
-对于以上两种方式，采用统一的更新路径：
-
-1. 修改json文件，注意修改后的json文件应该合法无循环依赖，可以用check_json_file.py进行检测。（**对于以上的变动2，这步操作后会报算子func找不到的error，可以忽略**)
-2. 发布新的算子so到算子目录。
-
-**如上，涉及图结构的变动，是比较危险的，操作也比较复杂，因此不建议重要业务采取如此的方式，建议在验证完json和算子的合法性之后，关机重启更新。如果业务必须热更新，可以先准备好更新后的json和op文件，用check_ops.py和check_json_file.py检查无告警后再进行以上的两步热更新操作**
+**修改图结构，算子和json文件应该是合法的，建议用check_ops.py和check_json_file.py检查无告警后再进行以上的热更新操作**
 
 ### 使用此项目的bazel配置
 
@@ -471,7 +471,7 @@ python3 check_ops.py your_op_file your_json_data_file
 合法的算子构造
 ```
 
-否则，若有错误的数据依赖，输出：
+否则，若有获取输入参数的越界，如a任务只有b一个依赖，但是在a的算子add中，提取了两个输入参数，就会出现越界的情况：
 
 ```shell
 Traceback (most recent call last):
@@ -479,41 +479,9 @@ Traceback (most recent call last):
     check_if_legal(op_deps, dep_map)
   File "/home/lion/taskflow/tools/check_ops.py", line 96, in check_if_legal
     raise Exception(
-Exception: c算子依赖的b不在json设置的依赖里
+Exception: json中a任务定义的add算子使用input数量存在越界
 ```
 
-否则，若有错误的输出类型读取，输出（**此校验需要在json内填写对应算子的输出类型才能生效**）：
-
-```shell
-Traceback (most recent call last):
-  File "/home/lion/taskflow/tools/check_ops.py", line 128, in <module>
-    check_if_legal(op_deps, dep_map)
-  File "/home/lion/taskflow/tools/check_ops.py", line 104, in check_if_legal
-    raise Exception(
-Exception: c算子中使用a算子的输入类型和json不一致
-```
-
-否则，若有未在json内定义的算子，输出：
-
-```shell
-Traceback (most recent call last):
-  File "/home/lion/taskflow/tools/check_ops.py", line 128, in <module>
-    check_if_legal(op_deps, dep_map)
-  File "/home/lion/taskflow/tools/check_ops.py", line 92, in check_if_legal
-    raise Exception("{}算子在json里面没有定义".format(op[0]))
-Exception: h算子在json里面没有定义
-```
-
-否则，若有算子输出时，输出名与对应算子名不一致，则输出
-
-```shell
-Traceback (most recent call last):
-  File "/home/lion/taskflow/tools/check_ops.py", line 127, in <module>
-    op_deps.append(parse_op(each))
-  File "/home/lion/taskflow/tools/check_ops.py", line 55, in parse_op
-    raise Exception(
-Exception: a output op name is not equal to task op name
-```
 
 否则，若有json定义的算子在算子文件中没有定义，则输出：
 

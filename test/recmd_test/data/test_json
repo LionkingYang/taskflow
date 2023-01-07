@@ -4,12 +4,14 @@
     "tasks": [
         {
             "task_name": "ParseRequest",
+            "op_name": "ParseRequest",
             "dependencies": [],
             "type": "string",
             "use_input": "1"
         },
         {
             "task_name": "UU",
+            "op_name": "UU",
             "dependencies": [
                 "ParseRequest"
             ],
@@ -17,6 +19,7 @@
         },
         {
             "task_name": "BlackList",
+            "op_name": "BlackList",
             "dependencies": [
                 "ParseRequest"
             ],
@@ -24,6 +27,7 @@
         },
         {
             "task_name": "RecallCB",
+            "op_name": "RecallOP",
             "dependencies": [
                 "UU",
                 "BlackList"
@@ -32,6 +36,7 @@
         },
         {
             "task_name": "RecallEMB",
+            "op_name": "RecallOP",
             "dependencies": [
                 "UU",
                 "BlackList"
@@ -40,6 +45,7 @@
         },
         {
             "task_name": "RecallMerge",
+            "op_name": "RecallMerge",
             "dependencies": [
                 "RecallCB",
                 "RecallEMB"
@@ -48,6 +54,7 @@
         },
         {
             "task_name": "Rank",
+            "op_name": "Rank",
             "dependencies": [
                 "RecallMerge"
             ],
@@ -55,6 +62,7 @@
         },
         {
             "task_name": "Policy",
+            "op_name": "Policy",
             "dependencies": [
                 "Rank"
             ],
@@ -62,6 +70,7 @@
         },
         {
             "task_name": "FillResponse",
+            "op_name": "FillResponse",
             "dependencies": [
                 "Policy"
             ],

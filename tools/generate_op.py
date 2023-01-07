@@ -32,26 +32,26 @@ def build_depedency_map(tasks: map) -> map:
         t["use_input"] = "0"
         if "use_input" in task:
             t["use_input"] = task["use_input"]
-        dep_map[task["task_name"]] = t
+        dep_map[task["op_name"]] = t
     return dep_map
 
 
 def generate_one_op(op_name: str, dep_map: map, input_type: str, output_type: str):
-    op_str = "\n\nBeginTask({}) {{\n".format(op_name)
-    op_str += "\tLoadTaskConfig({}, conf);\n".format(op_name)
+    op_str = "\n\nBEGIN_OP({}) {{\n".format(op_name)
     if dep_map[op_name]["use_input"] == "1":
-        op_str += "\tGetGlobalInput({}, input_name);\n".format(input_type)
+        op_str += "  GET_GLOBAL_INPUT({}, input_name);\n".format(input_type)
+    i = 0
     for each in dep_map[op_name]["dependencies"]:
-        op_str += "\tReadTaskOutput({}, {}, {});\n".format(each, dep_map[each]["type"] if len(
-            dep_map[each]["type"]) > 0 else "$param_type", each+"_output")
-    op_str += "\t// write your code here\n"
+        op_str += "  GET_INPUT({}, {}, {});\n".format(i,
+                                                      "$param_type", each+"_output")
+        i += 1
+    op_str += "  // write your code here\n"
     if dep_map[op_name]["output"] == "1":
-        op_str += "\tWriteToFinalOutput({}, final_output);\n".format(output_type)
-    else:
-        op_str += "\tWriteToOutput({}, {}, {}_output);\n".format(
-            op_name, dep_map[op_name]["type"] if len(dep_map[op_name]["type"]) > 0 else "$output_type", op_name)
+        op_str += "  WRITE_TO_FINAL_OUTPUT({}, final_output);\n".format(
+            output_type)
 
-    op_str += "}\nEndTask;"
+    op_str += "  RETURN_VAL({});\n".format("your_output")
+    op_str += "}\nEND_OP;"
     return op_str
 
 

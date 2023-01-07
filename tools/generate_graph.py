@@ -16,6 +16,9 @@ def parse_json_tasks(path: str) -> map:
 
 
 def generate_code(tasks: map) -> str:
+    task_map = {}
+    for each in tasks["tasks"]:
+        task_map[each["task_name"]] = each
     template = """```mermaid
 graph LR
    {}
@@ -24,8 +27,8 @@ graph LR
     template2 = "{}(({})) --> {}(({}))\n"
     for each in tasks["tasks"]:
         for dep in each["dependencies"]:
-            body += template2.format(dep, dep,
-                                     each["task_name"], each["task_name"])
+            body += template2.format(dep, dep+":"+task_map[dep]["op_name"],
+                                     each["task_name"], each["task_name"]+":"+each["op_name"])
     return template.format(body)
 
 

@@ -3,9 +3,12 @@
 // license information.
 
 #pragma once
+#include <cassert>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
+#include "absl/strings/numbers.h"
 #include "taskflow/include/logger/logger.h"
 #include "taskflow/include/utils/time_hepler.h"
 
@@ -832,43 +835,45 @@
 #define KCFG_FOR_EACH(what, ...) \
   KCFG_FOR_EACH_(KCFG_NARG_(__VA_ARGS__), what, __VA_ARGS__)
 
-#define BeginTask(task_name) void func_##task_name(TaskContext& context)
-#define RegisterFunc(task_name)                          \
-  taskflow::TaskFunc task_func##task_name =              \
-      static_cast<taskflow::TaskFunc>(func_##task_name); \
-  func_map.emplace(#task_name, &task_func##task_name);
-#define RegisterFuncs(...) KCFG_FOR_EACH(RegisterFunc, __VA_ARGS__)
-#define ReadTaskOutputUnsafe(task_name, type) \
-  std::any_cast<type&>(context.task_output[KCFG_STRINGIZE2(task_name)])
-#define WriteTaskOutput(task_name, type) \
+#define ASSERT_WITH_M(exp, msg) assert(((void)msg, exp))
+
+#define READ_TASK_OUTPUT_UNSAFE(task_name, type) \
+  std::any_cast<type&>(context.task_output[task_name])
+
+#define WRITE_TASK_OUTPUT(task_name, type) \
   context.task_output[KCFG_STRINGIZE2(task_name)]
-#define FinalOutput *(context.global_output)
+
+#define FINAL_OUTPUT *(context.global_output)
+
 #define Input(type) std::any_cast<const type&>(context.global_input)
-#define GetValue(type) std::make_any<type>
-#define WriteToOutput(task_name, type, result) \
-  WriteTaskOutput(task_name, type) = GetValue(type)(result);
-#define WriteToFinalOutput(type, result) FinalOutput = GetValue(type)(result);
-#define ReadTaskOutput(task_name, type, out)                               \
-  try {                                                                    \
-    std::any_cast<type&>(context.task_output[KCFG_STRINGIZE2(task_name)]); \
-  } catch (const std::bad_any_cast& e) {                                   \
-    TASKFLOW_CRITICAL("fetch task {} output has error, check again!",      \
-                      KCFG_STRINGIZE2(task_name));                         \
-  }                                                                        \
-  const type& out = ReadTaskOutputUnsafe(task_name, type);
 
-#define ReadTaskOutputMutable(task_name, type, out)                        \
-  try {                                                                    \
-    std::any_cast<type&>(context.task_output[KCFG_STRINGIZE2(task_name)]); \
-  } catch (const std::bad_any_cast& e) {                                   \
-    TASKFLOW_CRITICAL("fetch task {} output has error, check again!",      \
-                      KCFG_STRINGIZE2(task_name));                         \
-  }                                                                        \
-  type& out = ReadTaskOutputUnsafe(task_name, type);
+#define GET_VALUE(type) std::make_any<type>
 
-#define EndTask ;
+#define WRITE_TO_OUTPUT(task_name, type, result) \
+  WRITE_TASK_OUTPUT(task_name, type) = GET_VALUE(type)(result);
 
-#define GetGlobalInput(type, res)                                              \
+#define WRITE_TO_FINAL_OUTPUT(type, result) \
+  FINAL_OUTPUT = GET_VALUE(type)(result);
+
+#define READ_TASK_OUTPUT(task_name, type, out)                        \
+  try {                                                               \
+    std::any_cast<type&>(context.task_output[task_name]);             \
+  } catch (const std::bad_any_cast& e) {                              \
+    TASKFLOW_CRITICAL("fetch task {} output has error, check again!", \
+                      task_name);                                     \
+  }                                                                   \
+  const type& out = READ_TASK_OUTPUT_UNSAFE(task_name, type);
+
+#define READ_TASK_OUTPUTMutable(task_name, type, out)                 \
+  try {                                                               \
+    std::any_cast<type&>(context.task_output[task_name]);             \
+  } catch (const std::bad_any_cast& e) {                              \
+    TASKFLOW_CRITICAL("fetch task {} output has error, check again!", \
+                      task_name);                                     \
+  }                                                                   \
+  type& out = READ_TASK_OUTPUT_UNSAFE(task_name, type);
+
+#define GET_GLOBAL_INPUT(type, res)                                            \
   try {                                                                        \
     Input(type);                                                               \
   } catch (const std::bad_any_cast& e) {                                       \
@@ -876,15 +881,70 @@
   }                                                                            \
   const type& res = Input(type);
 
-#define LoadTaskConfig(task_name, config)                      \
+#define LOAD_TASK_CONFIG(config)                               \
   const std::unordered_map<std::string, std::string>& config = \
-      context.task_config[KCFG_STRINGIZE2(task_name)]
+      context.task_config[task_name]
 
-#define DebugConfig(task_name)                                               \
-  for (const auto& each : context.task_config[KCFG_STRINGIZE2(task_name)]) { \
-    TASKFLOW_INFO("config of {} is {}:{}", KCFG_STRINGIZE2(task_name),       \
-                  each.first, each.second);                                  \
+#define DEBUG_CONFIG                                              \
+  for (const auto& each : context.task_config[task_name]) {       \
+    TASKFLOW_INFO("config of {} is {}:{}", task_name, each.first, \
+                  each.second);                                   \
+  }
+
+template <typename T>
+bool ValueTrans(const std::string& origin_v, T* v) {
+  bool succ = false;
+  if constexpr (std::is_same_v<T, std::string>) {
+    *v = origin_v;
+    succ = true;
+  } else if constexpr (std::is_same_v<T, int>) {
+    succ = absl::SimpleAtoi(origin_v, v);
+  } else if constexpr (std::is_same_v<T, double>) {
+    succ = absl::SimpleAtod(origin_v, v);
+  } else if constexpr (std::is_same_v<T, float>) {
+    succ = absl::SimpleAtof(origin_v, v);
+  }
+  return succ;
+}
+
+#define GET_CONFIG_KEY(key, type, v, default_v)                              \
+  type v = default_v;                                                        \
+  if (context.task_config.find(task_name) &&                                 \
+      context.task_config[task_name].count(key)) {                           \
+    const auto& origin_v = context.task_config[task_name][key];              \
+    if (!ValueTrans<type>(origin_v, &v)) {                                   \
+      TASKFLOW_ERROR("task {} config {} type not match, use default",        \
+                     task_name, key);                                        \
+      v = default_v;                                                         \
+    }                                                                        \
+  } else {                                                                   \
+    TASKFLOW_ERROR("task {} config {} has no value, use default", task_name, \
+                   key);                                                     \
   }
 
 #define TNOWMS taskflow::GetCurrentTimeMillis()
 #define TNOWS taskflow::GetCurrentTimeSeconds()
+
+#define BEGIN_OP(op_name)                                   \
+  std::any func_##op_name(TaskContext& context,             \
+                          const vector<std::string>& input, \
+                          const string& task_name)
+#define END_OP
+
+#define GET_INPUT(ref_num, type, output)                  \
+  ASSERT_WITH_M(ref_num < input.size(),                   \
+                "expected index less than input's size"); \
+  READ_TASK_OUTPUT(input[ref_num], type, output)
+
+#define GET_MUTABLE_INPUT(ref_num, type, output)          \
+  ASSERT_WITH_M(ref_num < input.size(),                   \
+                "expected index less than input's size"); \
+  READ_TASK_OUTPUTMutable(input[ref_num], type, output)
+
+#define GET_INPUT_TO_VEC(type, output_list)                               \
+  std::vector<type> output_list(input.size());                            \
+  for (unsigned int i = 0; i < input.size(); i++) {                       \
+    output_list[i] = std::any_cast<type&>(context.task_output[input[i]]); \
+  }
+
+#define RETURN_VAL(val) return std::any(val);
