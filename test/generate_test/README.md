@@ -12,16 +12,16 @@ BeginTask(a) {
   // write your code here，这里写你的业务逻辑
   // a_output必须初始化
   // int a_output = 2;
-  // 也可以定义成其他名字，反正最后注入WriteTooutput中就可以了
-  WriteToOutput(a, int, a_output);
+  // 也可以定义成其他名字，反正最后注入WRITE_TO_OUTPUT中就可以了
+  WRITE_TO_OUTPUT(a, int, a_output);
 }
 EndTask;
 
 BeginTask(b) {
   LoadTaskConfig(b, conf);
-  ReadTaskOutput(a, int, a_output); // 获取a算子的结果，保存到a_output变量中，这里变量名可以随意更改
+  READ_TASK_OUTPUT(a, int, a_output); // 获取a算子的结果，保存到a_output变量中，这里变量名可以随意更改
   // write your code here
-  WriteToOutput(b, int, b_output);
+  WRITE_TO_OUTPUT(b, int, b_output);
 }
 EndTask;
 ```

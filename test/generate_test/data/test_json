@@ -1,41 +1,44 @@
 {
-    "input_type": "int",
-    "output_type": "int",
     "tasks": [
         {
             "task_name": "a",
+            "op_name": "fetch_input",
             "dependencies": [],
             "type": "int",
             "use_input": "1"
         },
         {
             "task_name": "b",
+            "op_name": "add_num",
             "dependencies": [
                 "a"
             ],
-            "type": "int"
+            "config": "num=3"
         },
         {
             "task_name": "c",
             "dependencies": [
                 "a"
             ],
-            "type": "int"
+            "op_name": "mult_num",
+            "config": "num=2"
         },
         {
             "task_name": "d",
             "dependencies": [
+                "a",
                 "b",
                 "c"
             ],
-            "type": "int"
+            "op_name": "accum_mult",
+            "config": "num=20"
         },
         {
-            "task_name": "e",
+            "task_name": "h",
             "dependencies": [
                 "d"
             ],
-            "type": "int",
+            "op_name": "write_output",
             "final_output": "1"
         }
     ]

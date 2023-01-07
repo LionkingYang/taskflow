@@ -26,6 +26,7 @@ TaskFlow的执行存在以下难点：
 同时，本框架还提供这些功能：
 
 - 简单的算子编写体验
+- 算子支持可复用
 - 根据图配置，一键生成算子和项目代码
 - 算子和图配置的相互校验
 - 算子和图的热更新
@@ -50,71 +51,69 @@ TaskFlow的执行存在以下难点：
     "tasks": [{
         "task_name": "",
         "dependencies": [],
-        "type": "int",
+        "op_name": "",
         "use_input": "1",
         "config": "a=1|b=2",
-        "final_output*": "1"
+        "final_output": "1"
     }]
 }
 ```
 
-- input_type: **可选**。全局输入的数据类型，如果填写了此字段，自动生成项目算子代码时会在**GetGlobalInput**获取全局输入时自动填充此类型。
-- output_type: **可选**。全局输出的数据类型，如果填写了此字段，自动生成项目算子代码时会在**WriteToFinalOutput**写入全局输出时自动填充此类型。
+- input_type: **可选**。全局输入的数据类型，如果填写了此字段，自动生成项目算子代码时会在**GET_GLOBAL_INPUT**获取全局输入时自动填充此类型。
+- output_type: **可选**。全局输出的数据类型，如果填写了此字段，自动生成项目算子代码时会在**WRITE_TO_FINAL_OUTPUT**写入全局输出时自动填充此类型。
 - tasks: **必填**。数组，内部填充所有的任务描述。
-- task_name: **必填**。任务名，**任务唯一标识**，此任务名应与算子中对应的算子名一致。
+- task_name: **必填**。任务名，**任务唯一标识**。
 - dependencies: **必填，可为空**。任务依赖，数组。此任务依赖的其他任务，内填写其他任务的task_name。
-- type: **可选**。任务输出的数据类型。如果填写了此字段，自动生成项目算子代码时会在**ReadTaskOutput**获取该算子输出时自动填充此类型。
-- use_input: **可选**。是否使用全局输入。如果填写了此字段且字段值为"1"，自动生成项目算子代码时，该算子中会出现**GetGlobalInput**宏。
-- config: **可选**。配置格式：**k1=v1|k2=v2|k3=v3**。任务的配置，注入算子的配置，可在算子中直接用宏**LoadTaskConfig**获取，获取后的配置为**unordered_map**格式:{"k1":"v1", "k2":"v2", "k3":"v3"}。
-- final_output: **可选，但是只能有一个算子设置**。全图只能有一个对外输出算子， 如果填写了此字段且字段值为"1"，自动生成项目算子代码时，该算子中会出现**WriteToFinalOutput**宏。
+- op_name: **必填**。 此处为任务具体执行的算子名。
+- use_input: **可选**。是否使用全局输入。如果填写了此字段且字段值为"1"，自动生成项目算子代码时，该算子中会出现**GET_GLOBAL_INPUT**宏。
+- config: **可选**。配置格式：**k1=v1|k2=v2|k3=v3**。任务的配置，注入算子的配置，可在算子中直接用宏**GET_CONFIG_KEY**获取。
+- final_output: **可选，但是只能有一个算子设置**。全图只能有一个对外输出算子， 如果填写了此字段且字段值为"1"，自动生成项目算子代码时，该算子中会出现**WRITE_TO_FINAL_OUTPUT**宏。
 
 ### 算子编写
 
 基于多种宏的支持，算子编写十分简单，具体结构如下（下图为自动生成算子）：
 
 ```c++
-BeginTask(a) {
-  LoadTaskConfig(a, conf);
+BEGIN_OP(a) {
   GetGlobalInput(int, input_name);
   // write your code here
-  WriteToOutput(a, int, a_output);
+  RETURN_VAL();
 }
-EndTask;
-BeginTask(b) {
-  LoadTaskConfig(b, conf);
-  ReadTaskOutput(a, int, a_output);
+END_OP;
+BEGIN_OP(b) {
+  GET_INPUT(0, int, a_output);
+  GET_CONFIG_KEY("num", int, value, 0);
   // write your code here
-  WriteToOutput(b, int, b_output);
+  WRITE_TO_OUTPUT(b, int, b_output);
 }
-EndTask;
-BeginTask(e) {
-  LoadTaskConfig(e, conf);
-  ReadTaskOutput(b, int, d_output);
+END_OP;
+BEGIN_OP(e) {
+  GET_INPUT(0, int, a_output);
   // write your code here
-  WriteToFinalOutput(int, final_output);
+  WRITE_TO_FINAL_OUTPUT(int, final_output);
 }
-EndTask;
+END_OP;
 ```
 
 其中比较重要的宏：
 
-- **BeginTask(task_name) { ... ...} EndTask;** 该宏为一对组合，标记着任务算子的开始与结束，其中BeginTask()括号中填写任务名，**该任务名应与图配置文件中的任务名对应**。
+- **BEGIN_OP(task_name) { ... ...} END_OP;** 该宏为一对组合，标记着任务算子的开始与结束，其中BEGIN_OP()括号中填写任务名，**该任务名应与图配置文件中的任务名对应**。
 
 - **LoadTaskConfig(task_name， conf)** 该宏读取对应的算子配置，并且把数据赋值给conf，conf为一个unordered_map。
 
-- **DebugConfig(task_name)** debug宏，遍历算子配置并且打印log。
+- **DEBUG_CONFIG(task_name)** debug宏，遍历算子配置并且打印log。
 
 - **GetGlobalInput(type, input_name)** 获取图的全局输入，并且赋值给type类型的input_name变量，**为const引用，不可修改**。此处需要注意type类型需要与算子的全局输入一致，否则会有bad_cast错误的风险。(**采用自动生成的算子可以规避此风险**)
 
-- **ReadTaskOutput(task_name, type, task_output)** 获取task_name算子的输入，并且赋值给type类型的名为task_output的变量上，**为const引用，不可修改**。此处也需注意type类型需要与算子真实的输出类型一致，否则会有bad_cast的风险，同时也需要保证在算子里只获取图配置里定义的依赖算子的输出，如：a算子依赖b, c算子的数据，那么在a算子中只能读取b,c算子的数据，否则会有bad_cast的风险。(**采用自动生成的算子可以规避此风险**)
+- **READ_TASK_OUTPUT(task_name, type, task_output)** 获取task_name算子的输入，并且赋值给type类型的名为task_output的变量上，**为const引用，不可修改**。此处也需注意type类型需要与算子真实的输出类型一致，否则会有bad_cast的风险，同时也需要保证在算子里只获取图配置里定义的依赖算子的输出，如：a算子依赖b, c算子的数据，那么在a算子中只能读取b,c算子的数据，否则会有bad_cast的风险。(**采用自动生成的算子可以规避此风险**)
 
-- **ReadTaskOutputMutable(task_name, type, task_output)** 和ReadTaskOutput用法类似，但是返回的是非const引用，主要是为了一些业务场景可能需要直接swap上游算子的结果考虑，不建议频繁使用。
+- **READ_TASK_OUTPUTMutable(task_name, type, task_output)** 和READ_TASK_OUTPUT用法类似，但是返回的是非const引用，主要是为了一些业务场景可能需要直接swap上游算子的结果考虑，不建议频繁使用。
 
-- **WriteToOutput(task_name, type, task_output)** 将type类型名为task_output的变量值赋值给任务的输出。此处赋值之后，依赖该任务的其他任务可以通过**ReadTaskOutput** 算子获取到该算子的输出。
+- **WRITE_TO_OUTPUT(task_name, type, task_output)** 将type类型名为task_output的变量值赋值给任务的输出。此处赋值之后，依赖该任务的其他任务可以通过**READ_TASK_OUTPUT** 算子获取到该算子的输出。
 
-- **WriteToFinalOutput(type, final_output)** 将type类型名为final_output的变量值赋给全局输出。此处需要注意type需与你定义的全局输出类型一致，否则会有bad_cast的风险。 (**采用自动生成的算子可以规避此风险**)
+- **WRITE_TO_FINAL_OUTPUT(type, final_output)** 将type类型名为final_output的变量值赋给全局输出。此处需要注意type需与你定义的全局输出类型一致，否则会有bad_cast的风险。 (**采用自动生成的算子可以规避此风险**)
 
-  **需要注意上面提到的input_name，task_output，final_output均可以随意自定义变量名，并不是必须写死这几个，对于input数据，ReadTaskOutput算子和GetGlobalInput算子都会对变量进行定义，因此直接取用赋值就行；但是对于需要写进output的变量，如task_output，final_output，在业务代码里需要先定义，不然会出现编译问题**
+  **需要注意上面提到的input_name，task_output，final_output均可以随意自定义变量名，并不是必须写死这几个，对于input数据，READ_TASK_OUTPUT算子和GetGlobalInput算子都会对变量进行定义，因此直接取用赋值就行；但是对于需要写进output的变量，如task_output，final_output，在业务代码里需要先定义，不然会出现编译问题**
 
 ### 执行
 

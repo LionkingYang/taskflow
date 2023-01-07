@@ -21,8 +21,9 @@ using taskflow::TaskManager;
 // 使用json构建图
 void RunGraph() {
   // 图配置和算子路径
-  std::string json_path = "/home/lion/taskflow/test/recmd_test/data/test_json";
-  std::string script_path = "/home/lion/taskflow/test/recmd_test/ops";
+  std::string json_path =
+      "/home/lion/ops/taskflow/test/recmd_test/data/test_json";
+  std::string script_path = "/home/lion/ops/taskflow/test/recmd_test/ops";
 
   // 注册图和算子，都是可热更新的
   taskflow::ReloadableObj<taskflow::Graph> reloadable_graph(json_path);

@@ -15,44 +15,47 @@ using taskflow::TaskManager;
 
 extern "C" {
 
-BeginTask(a) {
-  LoadTaskConfig(a, conf);
-  GetGlobalInput(int, input_name);
+BEGIN_OP(fetch_input) {
+  GET_GLOBAL_INPUT(int, input_name);
   // write your code here
-  WriteToOutput(a, int, a_output);
+  RETURN_VAL(input_name);
 }
-EndTask;
+END_OP;
 
-BeginTask(b) {
-  LoadTaskConfig(b, conf);
-  ReadTaskOutput(a, int, a_output);
+BEGIN_OP(add_num) {
+  GET_INPUT(0, int, a_output);
   // write your code here
-  WriteToOutput(b, int, b_output);
+  GET_CONFIG_KEY("num", int, value, 0);
+  int res = a_output + value;
+  RETURN_VAL(res);
 }
-EndTask;
+END_OP;
 
-BeginTask(c) {
-  LoadTaskConfig(c, conf);
-  ReadTaskOutput(a, int, a_output);
+BEGIN_OP(mult_num) {
+  GET_INPUT(0, int, a_output);
   // write your code here
-  WriteToOutput(c, int, c_output);
+  GET_CONFIG_KEY("num", int, value, 0);
+  int res = a_output * value;
+  RETURN_VAL(res);
 }
-EndTask;
+END_OP;
 
-BeginTask(d) {
-  LoadTaskConfig(d, conf);
-  ReadTaskOutput(b, int, b_output);
-  ReadTaskOutput(c, int, c_output);
+BEGIN_OP(accum_mult) {
+  GET_INPUT_TO_VEC(int, input_list)
   // write your code here
-  WriteToOutput(d, int, d_output);
+  int res = 1;
+  for (const auto& each : input_list) {
+    res *= each;
+  }
+  RETURN_VAL(res);
 }
-EndTask;
+END_OP;
 
-BeginTask(e) {
-  LoadTaskConfig(e, conf);
-  ReadTaskOutput(d, int, d_output);
+BEGIN_OP(write_output) {
+  GET_INPUT(0, int, d_output);
   // write your code here
-  WriteToFinalOutput(int, final_output);
+  WRITE_TO_FINAL_OUTPUT(int, d_output);
+  RETURN_VAL(0);
 }
-EndTask;
+END_OP;
 }

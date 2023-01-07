@@ -27,7 +27,6 @@ graph LR
     template2 = "{}(({})) --> {}(({}))\n"
     for each in tasks["tasks"]:
         for dep in each["dependencies"]:
-            print(tasks["tasks"])
             body += template2.format(dep, dep+":"+task_map[dep]["op_name"],
                                      each["task_name"], each["task_name"]+":"+each["op_name"])
     return template.format(body)

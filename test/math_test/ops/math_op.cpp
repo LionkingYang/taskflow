@@ -22,41 +22,68 @@ using taskflow::TaskManager;
 using namespace std::chrono_literals;
 extern "C" {
 
-BEGIN_OP(add_one) {
+BEGIN_OP(add_num) {
   GET_INPUT(0, int, input0);
-  int output = input0 + 1;
-  std::this_thread::sleep_for(50ms);
-  return std::any(output);
+  GET_CONFIG_KEY("num", int, num, 0);
+  int output = input0 + num;
+  RETURN_VAL(output);
 }
+END_OP
+
+BEGIN_OP(mult_num) {
+  GET_INPUT(0, int, input0);
+  GET_CONFIG_KEY("num", int, num, 0);
+  int output = input0 * num;
+  RETURN_VAL(output);
+}
+END_OP
 
 BEGIN_OP(mult) {
   GET_INPUT(0, int, input0);
   GET_INPUT(1, int, input1);
-  LoadTaskConfig(task_name, config);
   int output = input0 * input1;
-  std::this_thread::sleep_for(50ms);
-  return std::any(output);
+  RETURN_VAL(output);
 }
+END_OP
 
 BEGIN_OP(add) {
   GET_INPUT(0, int, input0);
   GET_INPUT(1, int, input1);
-  LoadTaskConfig(task_name, config);
   int output = input0 + input1;
-  std::this_thread::sleep_for(50ms);
-  return std::any(output);
+  RETURN_VAL(output);
 }
+END_OP
+
+BEGIN_OP(accum_add) {
+  GET_INPUT_TO_VEC(int, input_list);
+  int res = 0;
+  for (const auto& each : input_list) {
+    res += each;
+  }
+  RETURN_VAL(res);
+}
+END_OP
+
+BEGIN_OP(accum_mult) {
+  GET_INPUT_TO_VEC(int, input_list);
+  int res = 1;
+  for (const auto& each : input_list) {
+    res *= each;
+  }
+  RETURN_VAL(res);
+}
+END_OP
 
 BEGIN_OP(fetch_input) {
-  GetGlobalInput(int, global_input);
-  std::this_thread::sleep_for(50ms);
-  return std::any(global_input);
+  GET_GLOBAL_INPUT(int, global_input);
+  RETURN_VAL(global_input);
 }
+END_OP
 
 BEGIN_OP(write_output) {
   GET_INPUT(0, int, input0);
-  WriteToFinalOutput(int, input0);
-  std::this_thread::sleep_for(50ms);
-  return std::any(0);
+  WRITE_TO_FINAL_OUTPUT(int, input0);
+  RETURN_VAL(0);
 }
+END_OP
 }
