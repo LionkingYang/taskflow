@@ -498,10 +498,10 @@ Exception: json中定义的g算子没有实现
 
 ```shell
 cd tools
-python3 generate_op.py your_output_op_file your_json_data_file
+python3 generate_op.py path/your_output_op_file your_json_data_file
 ```
 
-会在tools目录下生成算子文件：your_output_op_file
+会在path目录下生成算子文件：your_output_op_file
 
 ### 主文件生成
 
