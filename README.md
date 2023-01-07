@@ -109,9 +109,11 @@ END_OP
 
 - **GET_GLOBAL_INPUT(type, input_name)** 获取图的全局输入，并且赋值给type类型的input_name变量，**为const引用，不可修改**。此处需要注意type类型需要与算子的全局输入一致，否则会有bad_cast错误的风险。(**采用自动生成的算子可以规避此风险**)
 
-- **GET_OUTPUT(index, type, task_output)** 获取算子的第index个输入，并且赋值给type类型的名为task_output的变量上，**为const引用，不可修改**。此处需要注意index大小不能超过实际的输入大小，如a任务使用了op_a算子，并且a任务依赖b，c任务，那么op_a算子的输入大小不大于2，所以index不能超过1。(**采用自动生成的算子可以规避此风险**)
+- **GET_OUTPUT(index, type, task_output)** 获取算子的第index个输入，并且赋值给type类型的名为task_output的变量上，**为const引用，不可修改**。此处需要注意index大小不能超过实际的输入大小，如a任务使用了op_a算子，并且a任务依赖b，c任务，那么op_a算子的输入大小不大于2，所以index不能超过1。并且这里的输入参数顺序和json文件中依赖算子的顺序一致。(**采用自动生成的算子可以规避此风险**)
 
 - **GET_OUTPUT_MUTABLE(task_name, type, task_output)** 和GET_OUTPUT用法类似，但是返回的是非const引用，主要是为了一些业务场景可能需要直接swap上游算子的结果考虑，不建议频繁使用。
+
+- **GET_INPUT_TO_VEC（type, output_list)** 将输入参数转化为type类型的vector，赋值到output_list参数中。这个宏主要是为了解决某些算子输入参数长度不固定的情况，并且需要保证上游任务给到该算子的数据类型都是一致的。
 
 - **WRITE_TO_FINAL_OUTPUT(type, final_output)** 将type类型名为final_output的变量值赋给全局输出。此处需要注意type需与你定义的全局输出类型一致，否则会有bad_cast的风险。 (**采用自动生成的算子可以规避此风险**)
 
@@ -300,17 +302,13 @@ cc_binary(
 
 #### 涉及图结构的变化  
 
-这种情况下比较复杂，由于算子中对图的输入输出存在强依赖的关系，因此线上热更新不支持对现有的任务进行依赖的重新组织（即A-->B变为B-->A这种类似的依赖变动）。目前支持以下两种情况：
+1. 新增算子
+在op文件中新增算子，编译之后发布到项目的so目录下即可。
+2. 新增任务&&修改依赖关系
+修改图的json文件，增加算子的依赖关系即可。
 
-1. 算子A与算子B之前没有依赖，添加A-->B的依赖
-2. 目前没有C算子，新增一个C算子。
 
-对于以上两种方式，采用统一的更新路径：
-
-1. 修改json文件，注意修改后的json文件应该合法无循环依赖，可以用check_json_file.py进行检测。（**对于以上的变动2，这步操作后会报算子func找不到的error，可以忽略**)
-2. 发布新的算子so到算子目录。
-
-**如上，涉及图结构的变动，是比较危险的，操作也比较复杂，因此不建议重要业务采取如此的方式，建议在验证完json和算子的合法性之后，关机重启更新。如果业务必须热更新，可以先准备好更新后的json和op文件，用check_ops.py和check_json_file.py检查无告警后再进行以上的两步热更新操作**
+**修改图结构，算子和json文件应该是合法的，建议用check_ops.py和check_json_file.py检查无告警后再进行以上的热更新操作**
 
 ### 使用此项目的bazel配置
 
@@ -473,7 +471,7 @@ python3 check_ops.py your_op_file your_json_data_file
 合法的算子构造
 ```
 
-否则，若有错误的数据依赖，输出：
+否则，若有获取输入参数的越界，如a任务只有b一个依赖，但是在a的算子add中，提取了两个输入参数，就会出现越界的情况：
 
 ```shell
 Traceback (most recent call last):
@@ -481,41 +479,9 @@ Traceback (most recent call last):
     check_if_legal(op_deps, dep_map)
   File "/home/lion/taskflow/tools/check_ops.py", line 96, in check_if_legal
     raise Exception(
-Exception: c算子依赖的b不在json设置的依赖里
+Exception: json中a任务定义的add算子使用input数量存在越界
 ```
 
-否则，若有错误的输出类型读取，输出（**此校验需要在json内填写对应算子的输出类型才能生效**）：
-
-```shell
-Traceback (most recent call last):
-  File "/home/lion/taskflow/tools/check_ops.py", line 128, in <module>
-    check_if_legal(op_deps, dep_map)
-  File "/home/lion/taskflow/tools/check_ops.py", line 104, in check_if_legal
-    raise Exception(
-Exception: c算子中使用a算子的输入类型和json不一致
-```
-
-否则，若有未在json内定义的算子，输出：
-
-```shell
-Traceback (most recent call last):
-  File "/home/lion/taskflow/tools/check_ops.py", line 128, in <module>
-    check_if_legal(op_deps, dep_map)
-  File "/home/lion/taskflow/tools/check_ops.py", line 92, in check_if_legal
-    raise Exception("{}算子在json里面没有定义".format(op[0]))
-Exception: h算子在json里面没有定义
-```
-
-否则，若有算子输出时，输出名与对应算子名不一致，则输出
-
-```shell
-Traceback (most recent call last):
-  File "/home/lion/taskflow/tools/check_ops.py", line 127, in <module>
-    op_deps.append(parse_op(each))
-  File "/home/lion/taskflow/tools/check_ops.py", line 55, in parse_op
-    raise Exception(
-Exception: a output op name is not equal to task op name
-```
 
 否则，若有json定义的算子在算子文件中没有定义，则输出：
 
