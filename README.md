@@ -79,41 +79,44 @@ BEGIN_OP(a) {
   // write your code here
   RETURN_VAL();
 }
-END_OP;
+END_OP
+
 BEGIN_OP(b) {
   GET_INPUT(0, int, a_output);
   GET_CONFIG_KEY("num", int, value, 0);
   // write your code here
   WRITE_TO_OUTPUT(b, int, b_output);
+  RETURN_VAL();
 }
-END_OP;
+END_OP
+
 BEGIN_OP(e) {
   GET_INPUT(0, int, a_output);
   // write your code here
   WRITE_TO_FINAL_OUTPUT(int, final_output);
+  RETURN_VAL();
 }
-END_OP;
+END_OP
 ```
 
 其中比较重要的宏：
 
-- **BEGIN_OP(task_name) { ... ...} END_OP;** 该宏为一对组合，标记着任务算子的开始与结束，其中BEGIN_OP()括号中填写任务名，**该任务名应与图配置文件中的任务名对应**。
+- **BEGIN_OP(op_name) { ... ...} END_OP;** 该宏为一对组合，标记着任务算子的开始与结束，其中BEGIN_OP()括号中填写算子，**该算子名应与图配置文件中的op_name对应**。
 
-- **LoadTaskConfig(task_name， conf)** 该宏读取对应的算子配置，并且把数据赋值给conf，conf为一个unordered_map。
+- **GET_CONFIG_KEY(key, type, output, default_v** 该宏读取key键对应的算子配置，并且将结果赋值给output。读取key的配置，并且转化为type类型(目前支持:string, double, int, float），如果类型转换失败或者未配置，返回default_v。
 
 - **DEBUG_CONFIG(task_name)** debug宏，遍历算子配置并且打印log。
 
-- **GetGlobalInput(type, input_name)** 获取图的全局输入，并且赋值给type类型的input_name变量，**为const引用，不可修改**。此处需要注意type类型需要与算子的全局输入一致，否则会有bad_cast错误的风险。(**采用自动生成的算子可以规避此风险**)
+- **GET_GLOBAL_INPUT(type, input_name)** 获取图的全局输入，并且赋值给type类型的input_name变量，**为const引用，不可修改**。此处需要注意type类型需要与算子的全局输入一致，否则会有bad_cast错误的风险。(**采用自动生成的算子可以规避此风险**)
 
-- **READ_TASK_OUTPUT(task_name, type, task_output)** 获取task_name算子的输入，并且赋值给type类型的名为task_output的变量上，**为const引用，不可修改**。此处也需注意type类型需要与算子真实的输出类型一致，否则会有bad_cast的风险，同时也需要保证在算子里只获取图配置里定义的依赖算子的输出，如：a算子依赖b, c算子的数据，那么在a算子中只能读取b,c算子的数据，否则会有bad_cast的风险。(**采用自动生成的算子可以规避此风险**)
+- **GET_OUTPUT(index, type, task_output)** 获取算子的第index个输入，并且赋值给type类型的名为task_output的变量上，**为const引用，不可修改**。此处需要注意index大小不能超过实际的输入大小，如a任务使用了op_a算子，并且a任务依赖b，c任务，那么op_a算子的输入大小不大于2，所以index不能超过1。(**采用自动生成的算子可以规避此风险**)
 
-- **READ_TASK_OUTPUTMutable(task_name, type, task_output)** 和READ_TASK_OUTPUT用法类似，但是返回的是非const引用，主要是为了一些业务场景可能需要直接swap上游算子的结果考虑，不建议频繁使用。
-
-- **WRITE_TO_OUTPUT(task_name, type, task_output)** 将type类型名为task_output的变量值赋值给任务的输出。此处赋值之后，依赖该任务的其他任务可以通过**READ_TASK_OUTPUT** 算子获取到该算子的输出。
+- **GET_OUTPUT_MUTABLE(task_name, type, task_output)** 和GET_OUTPUT用法类似，但是返回的是非const引用，主要是为了一些业务场景可能需要直接swap上游算子的结果考虑，不建议频繁使用。
 
 - **WRITE_TO_FINAL_OUTPUT(type, final_output)** 将type类型名为final_output的变量值赋给全局输出。此处需要注意type需与你定义的全局输出类型一致，否则会有bad_cast的风险。 (**采用自动生成的算子可以规避此风险**)
 
-  **需要注意上面提到的input_name，task_output，final_output均可以随意自定义变量名，并不是必须写死这几个，对于input数据，READ_TASK_OUTPUT算子和GetGlobalInput算子都会对变量进行定义，因此直接取用赋值就行；但是对于需要写进output的变量，如task_output，final_output，在业务代码里需要先定义，不然会出现编译问题**
+- **RETURN_VAL(output)** return语句，展开为:return std::any(output) 如果该算子不需要return结果，可以直接RETURN_VAL(0)。
+
 
 ### 执行
 
@@ -121,17 +124,17 @@ END_OP;
 
 ```mermaid
 graph LR
-    A((ParseRequest)) --> B((UU))
-    A((ParseRequest)) --> C((BlackList))
-    B((UU)) --> D((RecallCB))
-    B((UU)) --> E((RecallEMB))
-    C((BlackList))-->D((RecallCB))
-    C((Blacklist))-->E((RecallEMB))
-    D((RecallCB))-->F((RecallMerge))
-    E((RecallEMB))-->F((RecallMerge))
-    F((RecallMerge))-->G((Rank))
-    G((Rank))-->H((Policy))
-    H((Policy))-->I((FillResponse))
+   ParseRequest((ParseRequest:ParseRequest)) --> UU((UU:UU))
+ParseRequest((ParseRequest:ParseRequest)) --> BlackList((BlackList:BlackList))
+UU((UU:UU)) --> RecallCB((RecallCB:RecallOP))
+BlackList((BlackList:BlackList)) --> RecallCB((RecallCB:RecallOP))
+UU((UU:UU)) --> RecallEMB((RecallEMB:RecallOP))
+BlackList((BlackList:BlackList)) --> RecallEMB((RecallEMB:RecallOP))
+RecallCB((RecallCB:RecallOP)) --> RecallMerge((RecallMerge:RecallMerge))
+RecallEMB((RecallEMB:RecallOP)) --> RecallMerge((RecallMerge:RecallMerge))
+RecallMerge((RecallMerge:RecallMerge)) --> Rank((Rank:Rank))
+Rank((Rank:Rank)) --> Policy((Policy:Policy))
+Policy((Policy:Policy)) --> FillResponse((FillResponse:FillResponse))
 ```
 
 推荐的目录结构如图：
