@@ -507,7 +507,7 @@ python3 generate_op.py path/your_output_op_file your_json_data_file
 
 ```shell
 cd tools
-python3 generate_main.py your_op_file your_json_data_file your_output_main_file
+python3 generate_main.py your_op_file your_json_data_file path/your_output_main_file
 ```
 
-会在tools目录下生成主文件：your_output_main_file
+会在path目录下生成主文件：your_output_main_file
