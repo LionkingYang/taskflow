@@ -34,9 +34,19 @@
             "config": "num=20"
         },
         {
+            "task_name": "e",
+            "dependencies": [
+                "a",
+                "b",
+                "d"
+            ],
+            "op_name": "accum_add",
+            "config": "num=20"
+        },
+        {
             "task_name": "h",
             "dependencies": [
-                "d"
+                "e"
             ],
             "op_name": "write_output",
             "final_output": "1"

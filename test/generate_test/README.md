@@ -6,24 +6,32 @@
 ## 算子编写
 
 ```c++
-BeginTask(a) {
-  LoadTaskConfig(a, conf);  // 此处加载配置，后续取用可以直接从conf里面取
-  GetGlobalInput(int, input_name);  // 此处获取全局输入保存到input_name变量里，这里变量名可以随意更改
-  // write your code here，这里写你的业务逻辑
-  // a_output必须初始化
-  // int a_output = 2;
-  // 也可以定义成其他名字，反正最后注入WRITE_TO_OUTPUT中就可以了
-  WRITE_TO_OUTPUT(a, int, a_output);
-}
-EndTask;
-
-BeginTask(b) {
-  LoadTaskConfig(b, conf);
-  READ_TASK_OUTPUT(a, int, a_output); // 获取a算子的结果，保存到a_output变量中，这里变量名可以随意更改
+BEGIN_OP(fetch_input) {
+  GET_GLOBAL_INPUT(int, input_name); // 获取全局输入，使用这个宏
   // write your code here
-  WRITE_TO_OUTPUT(b, int, b_output);
+  RETURN_VAL(input_name); // 返回值return
 }
-EndTask;
+END_OP
+
+BEGIN_OP(add_num) {
+  GET_INPUT(0, int, a_output);  // 获取第一个输入参数，即任务上游第一个依赖的返回值
+  // write your code here
+  GET_CONFIG_KEY("num", int, value, 0); // 获取config中num的值，转换为int，默认为0
+  int res = a_output + value;
+  RETURN_VAL(res);
+}
+END_OP
+
+BEGIN_OP(accum_mult) {
+  GET_INPUT_TO_VEC(int, input_list) // 将上游所有依赖的输出放进input_list中， 注意这里上游输出的数据类型应该一致
+  // write your code here
+  int res = 1;
+  for (const auto& each : input_list) {
+    res *= each;
+  }
+  RETURN_VAL(res);
+}
+END_OP
 ```
 
 

@@ -34,12 +34,31 @@
             "config": "num=20"
         },
         {
-            "task_name": "h",
+            "task_name": "e",
             "dependencies": [
+                "a",
+                "b",
                 "d"
             ],
+            "op_name": "accum_add",
+            "config": "num=20"
+        },
+        {
+            "task_name": "f",
+            "dependencies": [
+                "e",
+                "e"
+            ],
+            "op_name": "add",
+            "config": "num=20"
+        },
+        {
+            "task_name": "h",
+            "dependencies": [
+                "f"
+            ],
             "op_name": "write_output",
-            "final_output":"1"
+            "final_output": "1"
         }
     ]
 }

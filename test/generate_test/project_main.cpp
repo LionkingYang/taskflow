@@ -21,8 +21,7 @@ using taskflow::TaskManager;
 // 使用json构建图
 void RunGraph() {
   // json文件地址
-  std::string json_path =
-      "/home/lion/ops/taskflow/test/generate_test/data/test_json";
+  std::string json_path = "/home/lion/ops/taskflow/test/generate_test/data/test_json";
   // 算子目录
   std::string script_path = "/home/lion/ops/taskflow/test/generate_test/ops/";
   // 热加载图配置
@@ -30,7 +29,7 @@ void RunGraph() {
   // 热加载算子图构建
   taskflow::SoScript so_script(script_path);
   // 初始化总的输入和输出
-  auto input = std::any(1);
+  auto input = std::any(0);
   auto output = std::any(0);
   // 从热更新图里获取最新的图
   std::shared_ptr<Graph> graph =
@@ -42,7 +41,7 @@ void RunGraph() {
     taskflow::TaskManager manager(graph, &so_script, input, &output);
     manager.Run();
     // 打印最终的输出结果
-    TASKFLOW_INFO("last res:{}", std::any_cast<int>(output));
+    // TASKFLOW_INFO("last res:{}", std::any_cast<int>(output));
   }
 }
 
@@ -50,3 +49,4 @@ int main(int argc, char** argv) {
   RunGraph();
   return 0;
 }
+

@@ -16,46 +16,49 @@ using taskflow::TaskManager;
 extern "C" {
 
 BEGIN_OP(fetch_input) {
-  GET_GLOBAL_INPUT(int, input_name);
+  GET_GLOBAL_INPUT($input_type, input_name);
   // write your code here
-  RETURN_VAL(input_name);
+  RETURN_VAL(your_output);
 }
-END_OP;
+END_OP
 
 BEGIN_OP(add_num) {
-  GET_INPUT(0, int, a_output);
+  GET_INPUT(0, $param_type, a_output);
   // write your code here
-  GET_CONFIG_KEY("num", int, value, 0);
-  int res = a_output + value;
-  RETURN_VAL(res);
+  RETURN_VAL(your_output);
 }
-END_OP;
+END_OP
 
 BEGIN_OP(mult_num) {
-  GET_INPUT(0, int, a_output);
+  GET_INPUT(0, $param_type, a_output);
   // write your code here
-  GET_CONFIG_KEY("num", int, value, 0);
-  int res = a_output * value;
-  RETURN_VAL(res);
+  RETURN_VAL(your_output);
 }
-END_OP;
+END_OP
 
 BEGIN_OP(accum_mult) {
-  GET_INPUT_TO_VEC(int, input_list)
+  GET_INPUT(0, $param_type, a_output);
+  GET_INPUT(1, $param_type, b_output);
+  GET_INPUT(2, $param_type, c_output);
   // write your code here
-  int res = 1;
-  for (const auto& each : input_list) {
-    res *= each;
-  }
-  RETURN_VAL(res);
+  RETURN_VAL(your_output);
 }
-END_OP;
+END_OP
+
+BEGIN_OP(accum_add) {
+  GET_INPUT(0, $param_type, a_output);
+  GET_INPUT(1, $param_type, b_output);
+  GET_INPUT(2, $param_type, d_output);
+  // write your code here
+  RETURN_VAL(your_output);
+}
+END_OP
 
 BEGIN_OP(write_output) {
-  GET_INPUT(0, int, d_output);
+  GET_INPUT(0, $param_type, e_output);
   // write your code here
-  WRITE_TO_FINAL_OUTPUT(int, d_output);
-  RETURN_VAL(0);
+  WRITE_TO_FINAL_OUTPUT($output_type, final_output);
+  RETURN_VAL(your_output);
 }
-END_OP;
+END_OP
 }

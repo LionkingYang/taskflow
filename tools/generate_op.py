@@ -51,7 +51,7 @@ def generate_one_op(op_name: str, dep_map: map, input_type: str, output_type: st
             output_type)
 
     op_str += "  RETURN_VAL({});\n".format("your_output")
-    op_str += "}\nEND_OP;"
+    op_str += "}\nEND_OP"
     return op_str
 
 
