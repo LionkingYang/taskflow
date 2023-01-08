@@ -1,5 +1,5 @@
 # 实现简单的数学计算
-
+可以在这里体验图任务的生成：[demo](120.53.17.104:8000/hello)
 ## 主要功能
 实现简单的计算功能，示例中的图结构如下，实现了以下的数学计算(m, n可配置)：
 $$y=x(x+m)(x*n)$$
@@ -14,7 +14,8 @@ c((c:mult_num)) --> d((d:accum_mult))
 d((d:accum_mult)) --> h((h:write_output))
 ```
 ## 已实现算子
-- fetch_input: 获取全局外部输入
+- fetch_input: 获取全局外部输入算子
+- write_output: 最终的结果输出算子
 - add_num: 对输入加上某个数字之后输出。其中数字需要在config里面定义(eg. num=10)
 - mult_num: 对输入乘上某个数字之后输出。其中数字需要在config里面定义(eg. num=10)
 - accum_mult: 上游算子的结果进行累计相乘之后输出。
