@@ -28,7 +28,10 @@ class ReloadableObj {
     Run();
   }
 
-  ~ReloadableObj() { running_ = false; }
+  ~ReloadableObj() {
+    running_ = false;
+    if (t_.joinable()) t_.join();
+  }
   bool Load() {
     struct stat st;
     if (stat(path_.c_str(), &st) != 0) {
@@ -56,7 +59,7 @@ class ReloadableObj {
         std::this_thread::sleep_for(2000ms);
       }
     };
-    taskflow::WorkManager::GetInstance()->Execute(sync_func);
+    t_ = std::thread(sync_func);
   }
 
   inline const T& Get() { return double_confs_.Get(); }
@@ -66,6 +69,7 @@ class ReloadableObj {
   bool running_ = false;
   std::string path_;
   int64_t last_update_ = 0;
+  std::thread t_;
 };
 
 }  // namespace taskflow
