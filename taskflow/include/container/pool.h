@@ -29,8 +29,8 @@ struct HasClear {
 template <typename T, typename Enable = void>
 class ObjectPool : public taskflow::Singleton<ObjectPool<T>> {
  public:
-  explicit ObjectPool(size_t limit = 1024)
-      : limit_(limit), worker_(std::make_shared<taskflow::WorkManager>()) {}
+  explicit ObjectPool(size_t limit = 1024) : limit_(limit) {}
+  ~ObjectPool() noexcept { t_.join(); }
   void AddAvailable(T* v) {
     std::lock_guard<std::mutex> guard(alloc_mutex_);
     if (available_objs_.size() >= limit_) {
@@ -59,14 +59,14 @@ class ObjectPool : public taskflow::Singleton<ObjectPool<T>> {
         this->AddAvailable(v);
       }
     };
-    worker_->Execute(func);
+    t_ = std::thread(func);
   }
 
  private:
   std::deque<T*> available_objs_;
   std::mutex alloc_mutex_;
   size_t limit_;
-  std::shared_ptr<taskflow::WorkManager> worker_;
+  std::thread t_;
 };
 
 template <typename T>
