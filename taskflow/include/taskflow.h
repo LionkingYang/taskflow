@@ -23,7 +23,6 @@
 #include "taskflow/include/so_handler/so_handler.h"
 #include "taskflow/include/task.h"
 #include "taskflow/include/utils/string_utils.h"
-#include "taskflow/include/work_manager/thread_pool.h"
 #include "taskflow/include/work_manager/work_manager.h"
 
 using std::atomic;
