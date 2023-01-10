@@ -403,7 +403,7 @@ python3 generate_project.py project_path(你的项目目录) json_file_path(你�
 └── project_main.cpp
 ```
 
-输出算子和主文件，可以在这里查看: [generate_demo](https://github.com/LionkingYang/taskflow/tree/main/test/generate_test)。
+输出算子和主文件，可以在这里查看: [generate_demo](https://github.com/LionkingYang/taskflow/tree/main/example/generate_test)。
 
 ### 生成TaskFlow流图
 
