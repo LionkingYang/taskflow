@@ -12,6 +12,7 @@
 #include "taskflow/include/work_manager/thread_pool.h"
 
 using std::vector;
+using taskflow::ThreadPool;
 using AnyFunc = std::function<void(void)>;
 namespace taskflow {
 class WorkManager : public Singleton<WorkManager> {
