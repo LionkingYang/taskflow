@@ -8,20 +8,20 @@
 #include <memory>
 #include <vector>
 
-#include "oneapi/tbb/task_group.h"
 #include "taskflow/include/container/singleton.h"
+#include "taskflow/include/work_manager/thread_pool.h"
 
 using std::vector;
 using AnyFunc = std::function<void(void)>;
 namespace taskflow {
 class WorkManager : public Singleton<WorkManager> {
  public:
-  WorkManager() {}
-  ~WorkManager() noexcept { tg_.wait(); }
+  WorkManager() { pools_ = std::make_shared<ThreadPool>(4); }
+  ~WorkManager() noexcept {}
 
-  void Execute(AnyFunc task) { tg_.run(task); }
+  void Execute(AnyFunc task) { pools_->enqueue(task); }
 
  private:
-  tbb::task_group tg_;
+  std::shared_ptr<ThreadPool> pools_;
 };
 }  // namespace taskflow
