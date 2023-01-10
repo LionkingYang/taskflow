@@ -168,7 +168,7 @@ main文件示例：
 #include "taskflow/include/so_handler/so_handler.h"
 #include "taskflow/include/taskflow.h"
 #include "taskflow/include/utils/latency_guard.h"
-#include "test/recmd_test/deps/struct_define.h"
+#include "example/recmd_test/deps/struct_define.h"
 
 using taskflow::Graph;
 using taskflow::TaskContext;
@@ -239,8 +239,8 @@ int main(int argc, char **argv) {
 cc_binary(
     name = "recmd_op",
     srcs = glob([
-        "test/recmd_test/ops/*.cpp",
-        "test/recmd_test/deps/*.h",
+        "example/recmd_test/ops/*.cpp",
+        "example/recmd_test/deps/*.h",
     ]),
     linkopts = [
         "-lpthread",
@@ -267,8 +267,8 @@ binary编译bazel配置：
 cc_binary(
     name = "recmd_test",
     srcs = glob([
-        "test/recmd_test/**/*.cpp",
-        "test/recmd_test/**/*.h",
+        "example/recmd_test/**/*.cpp",
+        "example/recmd_test/**/*.h",
     ]),
     malloc = "@com_github_jemalloc//:jemalloc", # 此处引入jemalloc支持
     deps = ["//:task_flow_dep"],
