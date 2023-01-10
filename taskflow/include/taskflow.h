@@ -15,7 +15,6 @@
 #include <utility>
 #include <vector>
 
-#include "oneapi/tbb/task_group.h"
 #include "taskflow/include/common_struct/task_struct.h"
 #include "taskflow/include/container/concurrent_map.h"
 #include "taskflow/include/graph.h"
@@ -24,6 +23,7 @@
 #include "taskflow/include/so_handler/so_handler.h"
 #include "taskflow/include/task.h"
 #include "taskflow/include/utils/string_utils.h"
+#include "taskflow/include/work_manager/thread_pool.h"
 #include "taskflow/include/work_manager/work_manager.h"
 
 using std::atomic;
@@ -38,8 +38,7 @@ namespace taskflow {
 class TaskManager {
  public:
   // 使用已经建立好依赖关系的tasks列表进行初始化
-  TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script,
-              const std::any& input, std::any* output);
+  TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script, const std::any& input, std::any* output);
   void Run();
   ~TaskManager() { Clear(); }
   void Clear();
@@ -49,8 +48,7 @@ class TaskManager {
   string ToString();
 
  private:
-  taskflow::ConcurrentMap<string, std::shared_ptr<std::atomic_int>>
-      atomic_predecessor_count_;
+  taskflow::ConcurrentMap<string, std::shared_ptr<std::atomic_int>> atomic_predecessor_count_;
   std::shared_ptr<Graph> graph_;
   taskflow::SoScript* so_script_;
   taskflow::ConcurrentMap<string, int> map_in_progress_;
