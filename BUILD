@@ -7,7 +7,7 @@ package(
 cc_binary(
     name = "math_test",
     srcs = [
-        "test/math_test/main.cpp",
+        "example/math_test/main.cpp",
     ],
     malloc = "@com_github_jemalloc//:jemalloc",
     deps = ["//:task_flow_dep"],
@@ -16,9 +16,9 @@ cc_binary(
 cc_binary(
     name = "recmd_op",
     srcs = glob([
-        "test/recmd_test/ops/*.cpp",
-        "test/recmd_test/deps/*.h",
-        "test/recmd_test/deps/*.cpp",
+        "example/recmd_test/ops/*.cpp",
+        "example/recmd_test/deps/*.h",
+        "example/recmd_test/deps/*.cpp",
     ]),
     linkopts = [
         "-lpthread",
@@ -33,7 +33,7 @@ cc_binary(
 cc_binary(
     name = "math_op",
     srcs = [
-        "test/math_test/ops/math_op.cpp",
+        "example/math_test/ops/math_op.cpp",
     ],
     linkopts = [
         "-lpthread",
@@ -48,7 +48,7 @@ cc_binary(
 cc_binary(
     name = "generate_op",
     srcs = [
-        "test/generate_test/ops/project_op.cpp",
+        "example/generate_test/ops/project_op.cpp",
     ],
     linkopts = [
         "-lpthread",
@@ -63,7 +63,7 @@ cc_binary(
 cc_binary(
     name = "generate_test",
     srcs = [
-        "test/generate_test/project_main.cpp",
+        "example/generate_test/project_main.cpp",
     ],
     deps = ["//:task_flow_dep"],
 )
@@ -71,8 +71,8 @@ cc_binary(
 cc_binary(
     name = "recmd_test",
     srcs = glob([
-        "test/recmd_test/**/*.cpp",
-        "test/recmd_test/**/*.h",
+        "example/recmd_test/**/*.cpp",
+        "example/recmd_test/**/*.h",
     ]),
     malloc = "@com_github_jemalloc//:jemalloc",
     deps = ["//:task_flow_dep"],
