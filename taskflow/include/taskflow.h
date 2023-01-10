@@ -37,7 +37,8 @@ namespace taskflow {
 class TaskManager {
  public:
   // 使用已经建立好依赖关系的tasks列表进行初始化
-  TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script, const std::any& input, std::any* output);
+  TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_script,
+              const std::any& input, std::any* output);
   void Run();
   ~TaskManager() { Clear(); }
   void Clear();
@@ -47,7 +48,8 @@ class TaskManager {
   string ToString();
 
  private:
-  taskflow::ConcurrentMap<string, std::shared_ptr<std::atomic_int>> atomic_predecessor_count_;
+  taskflow::ConcurrentMap<string, std::shared_ptr<std::atomic_int>>
+      atomic_predecessor_count_;
   std::shared_ptr<Graph> graph_;
   taskflow::SoScript* so_script_;
   taskflow::ConcurrentMap<string, int> map_in_progress_;

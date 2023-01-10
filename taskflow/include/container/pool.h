@@ -68,7 +68,9 @@ class ObjectPool : public taskflow::Singleton<ObjectPool<T>> {
 };
 
 template <typename T>
-struct ObjectPool<T, typename std::enable_if<std::is_enum<T>::value || std::is_fundamental<T>::value>::type>
+struct ObjectPool<T,
+                  typename std::enable_if<std::is_enum<T>::value ||
+                                          std::is_fundamental<T>::value>::type>
     : public taskflow::Singleton<ObjectPool<T>> {
   ObjectPool() {}
 

@@ -1,6 +1,6 @@
 Language: Cpp
 BasedOnStyle: Google
-ColumnLimit: 120
+ColumnLimit: 80
 # 自动识别代码中的指针对齐方式，如果希望强制统一，则可以改为 false
 DerivePointerAlignment: true
 # 默认对齐到类型名
