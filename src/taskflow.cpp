@@ -30,7 +30,7 @@ TaskManager::TaskManager(std::shared_ptr<Graph> graph, taskflow::SoScript* so_sc
 }
 
 void TaskManager::Run() {
-  while (true) {
+  while (uint64_t(finish_num_.load()) != graph_->GetTasks().size()) {
     for (const auto& task : graph_->GetTasks()) {
       // 找出没有前置依赖并且还没执行的task
       if (atomic_predecessor_count_[task->GetTaskName()]->load() == 0 && !map_in_progress_.find(task->GetTaskName())) {
@@ -62,10 +62,6 @@ void TaskManager::Run() {
         // 选取worker执行task
         taskflow::WorkManager::GetInstance()->Execute(t);
       }
-    }
-    // 任务全部完成，退出
-    if (uint64_t(finish_num_.load()) == graph_->GetTasks().size()) {
-      break;
     }
   }
 }
