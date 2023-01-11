@@ -947,4 +947,4 @@ bool ValueTrans(const std::string& origin_v, T* v) {
     output_list[i] = std::any_cast<type&>(context.task_output[input[i]]); \
   }
 
-#define RETURN_VAL(val) return std::any(val);
+#define RETURN_VAL(val) return std::any(std::move(val));

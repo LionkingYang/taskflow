@@ -2,63 +2,43 @@
     "tasks": [
         {
             "task_name": "a",
-            "op_name": "fetch_input",
+            "op_name": "FetchInput",
             "dependencies": [],
-            "type": "int",
-            "use_input": "1"
+            "config": ""
         },
         {
             "task_name": "b",
-            "op_name": "add_num",
+            "op_name": "AddNum",
             "dependencies": [
                 "a"
             ],
-            "config": "num=3"
+            "config": "num=5"
         },
         {
             "task_name": "c",
+            "op_name": "AddNum",
             "dependencies": [
                 "a"
             ],
-            "op_name": "mult_num",
-            "config": "num=2"
+            "config": "num=12"
         },
         {
             "task_name": "d",
+            "op_name": "AccumMult",
             "dependencies": [
                 "a",
                 "b",
                 "c"
             ],
-            "op_name": "accum_mult",
-            "config": "num=20"
+            "config": ""
         },
         {
             "task_name": "e",
+            "op_name": "WriteOutput",
             "dependencies": [
-                "a",
-                "b",
                 "d"
             ],
-            "op_name": "accum_add",
-            "config": "num=20"
-        },
-        {
-            "task_name": "f",
-            "dependencies": [
-                "e",
-                "e"
-            ],
-            "op_name": "add",
-            "config": "num=20"
-        },
-        {
-            "task_name": "h",
-            "dependencies": [
-                "f"
-            ],
-            "op_name": "write_output",
-            "final_output": "1"
+            "config": ""
         }
     ]
 }
