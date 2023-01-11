@@ -122,7 +122,7 @@ END_OP
 
 ### 执行
 
-以下demo可以在[recmd_demo](https://github.com/LionkingYang/taskflow/tree/main/test/recmd_test)下找到，主要是模拟推荐服务中网关服务的调度过程(更简单的demo看这里:[math_demo](https://github.com/LionkingYang/taskflow/tree/main/test/math_test))：
+以下demo可以在[recmd_demo](https://github.com/LionkingYang/taskflow/tree/main/example/recmd_test)下找到，主要是模拟推荐服务中网关服务的调度过程(更简单的demo看这里:[math_demo](https://github.com/LionkingYang/taskflow/tree/main/example/math_test))：
 
 ```mermaid
 graph LR
@@ -303,8 +303,10 @@ cc_binary(
 #### 涉及图结构的变化  
 
 1. 新增算子
+
 在op文件中新增算子，编译之后发布到项目的so目录下即可。
-2. 新增任务&&修改依赖关系
+1. 新增任务&&修改依赖关系
+
 修改图的json文件，增加算子的依赖关系即可。
 
 
@@ -401,7 +403,7 @@ python3 generate_project.py project_path(你的项目目录) json_file_path(你�
 └── project_main.cpp
 ```
 
-输出算子和主文件，可以在这里查看: [generate_demo](https://github.com/LionkingYang/taskflow/tree/main/test/generate_test)。
+输出算子和主文件，可以在这里查看: [generate_demo](https://github.com/LionkingYang/taskflow/tree/main/example/generate_test)。
 
 ### 生成TaskFlow流图
 
