@@ -524,10 +524,10 @@ python3 generate_main.py your_op_file your_json_data_file path/your_output_main_
 
 [算子管理界面](http://120.53.17.104:8000)
 
-![image-20230111214026272](/Users/lionyang/Library/Application Support/typora-user-images/image-20230111214026272.png)
+![image-20230111214026272](https://github.com/LionkingYang/taskflow/blob/main/imgs/ops.png)
 
 
 
 [任务配置界面](http://120.53.17.104:8000/task)
 
-![image-20230111214121578](/Users/lionyang/Library/Application Support/typora-user-images/image-20230111214121578.png)
+![image-20230111214121578](https://github.com/LionkingYang/taskflow/blob/main/imgs/task.png)
