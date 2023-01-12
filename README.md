@@ -36,6 +36,7 @@ TaskFlow的执行存在以下难点：
 - 算子和图配置管理界面
 - 算子和图的热更新
 - 算子配置注入
+- 支持任务异步执行
 - 基于spdlog的多级日志支持
 - 简单易用的对象池
 - 简单易用的LatencyDebug工具
@@ -82,7 +83,7 @@ TaskFlow的执行存在以下难点：
 BEGIN_OP(a) {
   GetGlobalInput(int, input_name);
   // write your code here
-  RETURN_VAL();
+  RETURN_VAL(value);
 }
 END_OP
 
@@ -90,8 +91,7 @@ BEGIN_OP(b) {
   GET_INPUT(0, int, a_output);
   GET_CONFIG_KEY("num", int, value, 0);
   // write your code here
-  WRITE_TO_OUTPUT(b, int, b_output);
-  RETURN_VAL();
+  RETURN_VAL(value);
 }
 END_OP
 
@@ -99,7 +99,7 @@ BEGIN_OP(e) {
   GET_INPUT(0, int, a_output);
   // write your code here
   WRITE_TO_FINAL_OUTPUT(int, final_output);
-  RETURN_VAL();
+  RETURN_VAL(value);
 }
 END_OP
 ```
