@@ -40,7 +40,19 @@ void TaskManager::Run() {
         // 设置执行状态为true
         map_in_progress_.emplace(task->GetTaskName(), 1);
         // 构建task任务
-        auto t = [this, task] {
+        auto done = [this, task] {
+          // 执行完之后，更新依赖此task任务的依赖数
+          if (graph_->GetSuccessorMap()->find(task->GetTaskName())) {
+            for (const auto& each :
+                 graph_->GetSuccessorMap()->at(task->GetTaskName())) {
+              atomic_predecessor_count_[each->GetTaskName()]->fetch_sub(1);
+            }
+          }
+
+          // 更新finish数组
+          finish_num_.fetch_add(1);
+        };
+        auto t = [this, task, done] {
           // 执行用户设定的task
           if (const auto func =
                   so_script_->GetFunc(kFuncPrefix + task->GetOpName());
@@ -56,17 +68,11 @@ void TaskManager::Run() {
           } else {
             TASKFLOW_ERROR("func of {} is empty!", task->GetTaskName());
           }
-          // 执行完之后，更新依赖此task任务的依赖数
-          if (graph_->GetSuccessorMap()->find(task->GetTaskName())) {
-            for (const auto& each :
-                 graph_->GetSuccessorMap()->at(task->GetTaskName())) {
-              atomic_predecessor_count_[each->GetTaskName()]->fetch_sub(1);
-            }
-          }
-
-          // 更新finish数组
-          finish_num_.fetch_add(1);
+          // 非异步任务，执行完之后，更新依赖此task任务的依赖数
+          if (!task->is_async()) done();
         };
+        // 异步任务直接更新依赖关系
+        if (task->is_async()) done();
         // 选取worker执行task
         taskflow::WorkManager::GetInstance()->Execute(t);
       }

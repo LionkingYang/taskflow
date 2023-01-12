@@ -34,7 +34,7 @@ class Graph {
     }
     BuildDependencyMap();
     CircleCheck();
-    return !GetCircle();
+    return true;
   }
 
   const taskflow::ConcurrentMap<string, vector<TaskPtr>>* GetSuccessorMap() {

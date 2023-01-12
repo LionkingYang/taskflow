@@ -70,8 +70,8 @@ bool Graph::BuildFromJson(const string& json_path) {
   unordered_map<string, TaskPtr> task_map;
   // 遍历一遍，拿到task列表
   for (const auto& each : jobs.tasks) {
-    TaskPtr A =
-        std::make_shared<Task>(each.task_name, each.op_name, each.config);
+    TaskPtr A = std::make_shared<Task>(each.task_name, each.op_name,
+                                       each.config, each.async);
     task_map.emplace(each.task_name, A);
     tasks_.emplace_back(A);
   }

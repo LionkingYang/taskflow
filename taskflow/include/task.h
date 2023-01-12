@@ -19,8 +19,8 @@ using TaskPtr = std::shared_ptr<Task>;
 class Task {
  public:
   explicit Task(const string& task_name, const string& op_name,
-                const string& config)
-      : task_name_(task_name), op_name_(op_name) {
+                const string& config, bool async)
+      : task_name_(task_name), op_name_(op_name), async_(async) {
     config_map_ = taskflow::split_twice(config, "|", "=");
   }
   const string& GetTaskName() const { return task_name_; }
@@ -33,10 +33,13 @@ class Task {
 
   void AddPredecessor(TaskPtr task) { predecessors_.emplace_back(task); }
 
+  bool is_async() { return async_; }
+
  private:
   const string task_name_;
   const string op_name_;
   std::unordered_map<std::string, std::string> config_map_;
   vector<TaskPtr> predecessors_;
+  bool async_;
 };
 }  // namespace taskflow
