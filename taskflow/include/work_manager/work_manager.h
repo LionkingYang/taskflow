@@ -10,6 +10,7 @@
 
 #include "taskflow/include/container/singleton.h"
 #include "taskflow/include/work_manager/thread_pool.h"
+#include "unistd.h"
 
 using std::vector;
 using taskflow::ThreadPool;
@@ -17,7 +18,9 @@ using AnyFunc = std::function<void(void)>;
 namespace taskflow {
 class WorkManager : public Singleton<WorkManager> {
  public:
-  WorkManager() { pools_ = std::make_shared<ThreadPool>(4); }
+  WorkManager() {
+    pools_ = std::make_shared<ThreadPool>(sysconf(_SC_NPROCESSORS_ONLN));
+  }
   ~WorkManager() noexcept {}
 
   void Execute(AnyFunc task) { pools_->enqueue(task); }

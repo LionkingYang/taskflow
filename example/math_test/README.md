@@ -6,22 +6,22 @@ $$y=x(x+m)(x*n)$$
 
 ```mermaid
 graph LR
-   a((a:fetch_input)) --> b((b:add_num))
-a((a:fetch_input)) --> c((c:mult_num))
-a((a:fetch_input)) --> d((d:accum_mult))
-b((b:add_num)) --> d((d:accum_mult))
-c((c:mult_num)) --> d((d:accum_mult))
-d((d:accum_mult)) --> h((h:write_output))
+a((a:FetchInput)) --> b((b:AddNum))
+a((a:FetchInput)) --> c((c:AddNum))
+a((a:FetchInput)) --> d((d:AccumMult))
+b((b:AddNum)) --> d((d:AccumMult))
+c((c:AddNum)) --> d((d:AccumMult))
+d((d:AccumMult)) --> e((e:WriteOutput))
 ```
 ## 已实现算子
-- fetch_input: 获取全局外部输入算子
-- write_output: 最终的结果输出算子
-- add_num: 对输入加上某个数字之后输出。其中数字需要在config里面定义(eg. num=10)
-- mult_num: 对输入乘上某个数字之后输出。其中数字需要在config里面定义(eg. num=10)
-- accum_mult: 上游算子的结果进行累计相乘之后输出。
-- accum_add: 上游算子的结果进行累计相加之后输出。
-- add: 此算子需要上游有且仅有两个依赖。将上游两个算子的数据相加之后输出。
-- mult: 此算子需要上游有且仅有两个依赖。将上游两个算子的数据相乘之后输出
+- FetchInput: 获取全局外部输入算子
+- WriteOutput: 最终的结果输出算子
+- AddNum: 对输入加上某个数字之后输出。其中数字需要在config里面定义(eg. num=10)
+- MultNum: 对输入乘上某个数字之后输出。其中数字需要在config里面定义(eg. num=10)
+- AccumNum: 上游算子的结果进行累计相乘之后输出。
+- AccumAdd: 上游算子的结果进行累计相加之后输出。
+- Add: 此算子需要上游有且仅有两个依赖。将上游两个算子的数据相加之后输出。
+- Mult: 此算子需要上游有且仅有两个依赖。将上游两个算子的数据相乘之后输出
 编译算子:
 
 ```shell

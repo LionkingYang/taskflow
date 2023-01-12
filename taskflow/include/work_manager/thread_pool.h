@@ -20,7 +20,8 @@ class ThreadPool {
  public:
   explicit ThreadPool(size_t);
   template <class F, class... Args>
-  auto enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
+  auto enqueue(F&& f, Args&&... args)
+      -> std::future<typename std::result_of<F(Args...)>::type>;
   ~ThreadPool();
 
  private:
@@ -44,7 +45,8 @@ inline ThreadPool::ThreadPool(size_t threads) : stop_(false) {
 
         {
           std::unique_lock<std::mutex> lock(this->queue_mutex_);
-          this->condition_.wait(lock, [this] { return this->stop_ || !this->tasks_.empty(); });
+          this->condition_.wait(
+              lock, [this] { return this->stop_ || !this->tasks_.empty(); });
           if (this->stop_ && this->tasks_.empty()) return;
           task = std::move(this->tasks_.front());
           this->tasks_.pop();
@@ -57,11 +59,12 @@ inline ThreadPool::ThreadPool(size_t threads) : stop_(false) {
 
 // add new work item to the pool
 template <class F, class... Args>
-auto ThreadPool::enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type> {
+auto ThreadPool::enqueue(F&& f, Args&&... args)
+    -> std::future<typename std::result_of<F(Args...)>::type> {
   using return_type = typename std::result_of<F(Args...)>::type;
 
-  auto task =
-      std::make_shared<std::packaged_task<return_type()> >(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+  auto task = std::make_shared<std::packaged_task<return_type()> >(
+      std::bind(std::forward<F>(f), std::forward<Args>(args)...));
 
   std::future<return_type> res = task->get_future();
   {

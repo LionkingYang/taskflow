@@ -22,7 +22,7 @@ using taskflow::TaskManager;
 using namespace std::chrono_literals;
 extern "C" {
 
-BEGIN_OP(add_num) {
+BEGIN_OP(AddNum) {
   GET_INPUT(0, int, input0);
   GET_CONFIG_KEY("num", int, num, 0);
   int output = input0 + num;
@@ -30,7 +30,7 @@ BEGIN_OP(add_num) {
 }
 END_OP
 
-BEGIN_OP(mult_num) {
+BEGIN_OP(MultNum) {
   GET_INPUT(0, int, input0);
   GET_CONFIG_KEY("num", int, num, 0);
   int output = input0 * num;
@@ -38,7 +38,7 @@ BEGIN_OP(mult_num) {
 }
 END_OP
 
-BEGIN_OP(mult) {
+BEGIN_OP(Mult) {
   GET_INPUT(0, int, input0);
   GET_INPUT(1, int, input1);
   int output = input0 * input1;
@@ -46,7 +46,7 @@ BEGIN_OP(mult) {
 }
 END_OP
 
-BEGIN_OP(add) {
+BEGIN_OP(Add) {
   GET_INPUT(0, int, input0);
   GET_INPUT(1, int, input1);
   int output = input0 + input1;
@@ -54,7 +54,7 @@ BEGIN_OP(add) {
 }
 END_OP
 
-BEGIN_OP(accum_add) {
+BEGIN_OP(AccumAdd) {
   GET_INPUT_TO_VEC(int, input_list);
   int res = 0;
   for (const auto& each : input_list) {
@@ -64,7 +64,7 @@ BEGIN_OP(accum_add) {
 }
 END_OP
 
-BEGIN_OP(accum_mult) {
+BEGIN_OP(AccumMult) {
   GET_INPUT_TO_VEC(int, input_list);
   int res = 1;
   for (const auto& each : input_list) {
@@ -74,13 +74,13 @@ BEGIN_OP(accum_mult) {
 }
 END_OP
 
-BEGIN_OP(fetch_input) {
+BEGIN_OP(FetchInput) {
   GET_GLOBAL_INPUT(int, global_input);
   RETURN_VAL(global_input);
 }
 END_OP
 
-BEGIN_OP(write_output) {
+BEGIN_OP(WriteOutput) {
   GET_INPUT(0, int, input0);
   WRITE_TO_FINAL_OUTPUT(int, input0);
   RETURN_VAL(0);
