@@ -933,9 +933,12 @@ const T& get_value(const string& key,
   return default_v;
 }
 
-#define GET_INPUT_BASE(ref_num, type, output)                   \
-  ASSERT_WITH_M(ref_num < input.size(),                         \
-                "expected input index less than input's size"); \
+#define GET_INPUT_BASE(ref_num, type, output)                                \
+  if (ref_num >= input.size()) {                                             \
+    TASKFLOW_CRITICAL("{} get index bigger than input's size, check again!", \
+                      task_name);                                            \
+    return std::any(0);                                                      \
+  }                                                                          \
   const type& default_value_##ref_num = TaskFlowTrait<type>::get_default_v();
 
 #define GET_INPUT(ref_num, type, output)                                    \
