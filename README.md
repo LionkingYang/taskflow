@@ -327,6 +327,17 @@ cc_binary(
 [2022-12-07 14:28:32.612] [info] [main.cpp:64] ddddd:44444:0.1
 ```
 
+### 日志打印
+
+默认打印打控制台，level为info，如果需要打印到文件，可以在项目最开始调用配置函数：
+
+```c++
+taskflow::init_loggers("your_log_dir", "your_leve", false);
+```
+
+其中level包括："trace", "debug", "info", "warning", "error", "critical", "off"
+最后一个参数代表是否同步将日志输出到命令行，true代表输出，false为不输出。
+
 ### 热加载
 
 #### 不涉及图结构的变化
