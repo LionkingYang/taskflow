@@ -3,14 +3,21 @@
 // license information.
 
 #pragma once
+#include <any>
 #include <cassert>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "absl/strings/numbers.h"
+#include "taskflow/include/container/concurrent_map.h"
 #include "taskflow/include/logger/logger.h"
+#include "taskflow/include/traits/type_traits.h"
 #include "taskflow/include/utils/time_hepler.h"
+
+using std::any;
+using std::string;
 
 #define KCFG_STRINGIZE(arg) KCFG_STRINGIZE1(arg)
 #define KCFG_STRINGIZE1(arg) KCFG_STRINGIZE2(arg)
@@ -837,9 +844,6 @@
 
 #define ASSERT_WITH_M(exp, msg) assert(((void)msg, exp))
 
-#define READ_TASK_OUTPUT_UNSAFE(task_name, type) \
-  std::any_cast<type&>(context.task_output[task_name])
-
 #define WRITE_TASK_OUTPUT(task_name, type) \
   context.task_output[KCFG_STRINGIZE2(task_name)]
 
@@ -854,24 +858,6 @@
 
 #define WRITE_TO_FINAL_OUTPUT(type, result) \
   FINAL_OUTPUT = GET_VALUE(type)(result);
-
-#define READ_TASK_OUTPUT(task_name, type, out)                        \
-  try {                                                               \
-    std::any_cast<type&>(context.task_output[task_name]);             \
-  } catch (const std::bad_any_cast& e) {                              \
-    TASKFLOW_CRITICAL("fetch task {} output has error, check again!", \
-                      task_name);                                     \
-  }                                                                   \
-  const type& out = READ_TASK_OUTPUT_UNSAFE(task_name, type);
-
-#define READ_TASK_OUTPUTMutable(task_name, type, out)                 \
-  try {                                                               \
-    std::any_cast<type&>(context.task_output[task_name]);             \
-  } catch (const std::bad_any_cast& e) {                              \
-    TASKFLOW_CRITICAL("fetch task {} output has error, check again!", \
-                      task_name);                                     \
-  }                                                                   \
-  type& out = READ_TASK_OUTPUT_UNSAFE(task_name, type);
 
 #define GET_GLOBAL_INPUT(type, res)                                            \
   try {                                                                        \
@@ -931,20 +917,54 @@ bool ValueTrans(const std::string& origin_v, T* v) {
                           const string& task_name)
 #define END_OP
 
-#define GET_INPUT(ref_num, type, output)                  \
-  ASSERT_WITH_M(ref_num < input.size(),                   \
-                "expected index less than input's size"); \
-  READ_TASK_OUTPUT(input[ref_num], type, output)
+template <typename T>
+const T& get_value(const string& key,
+                   taskflow::ConcurrentMap<string, std::any>& task_output,
+                   const string& task_name, const T& default_v) {
+  if (task_output.find(key)) {
+    try {
+      return std::any_cast<const T&>(task_output.at(key));
+    } catch (const std::bad_any_cast& e) {
+      TASKFLOW_CRITICAL("{} fetch task {} output has error, check again!",
+                        task_name, key);
+      return default_v;
+    }
+  }
+  return default_v;
+}
 
-#define GET_MUTABLE_INPUT(ref_num, type, output)          \
-  ASSERT_WITH_M(ref_num < input.size(),                   \
-                "expected index less than input's size"); \
-  READ_TASK_OUTPUTMutable(input[ref_num], type, output)
+#define GET_INPUT_BASE(ref_num, type, output)                   \
+  ASSERT_WITH_M(ref_num < input.size(),                         \
+                "expected input index less than input's size"); \
+  const type& default_value_##ref_num = TaskFlowTrait<type>::get_default_v();
 
-#define GET_INPUT_TO_VEC(type, output_list)                               \
-  std::vector<type> output_list(input.size());                            \
-  for (unsigned int i = 0; i < input.size(); i++) {                       \
-    output_list[i] = std::any_cast<type&>(context.task_output[input[i]]); \
+#define GET_INPUT(ref_num, type, output)                                    \
+  GET_INPUT_BASE(ref_num, type, output)                                     \
+  const type& output = get_value<type>(input[ref_num], context.task_output, \
+                                       task_name, default_value_##ref_num)
+
+#define GET_MUTABLE_INPUT(ref_num, type, output)                             \
+  GET_INPUT_BASE(ref_num, type, output)                                      \
+  type& output =                                                             \
+      const_cast<type&>(get_value<type>(input[ref_num], context.task_output, \
+                                        task_name, default_value_##ref_num))
+
+#define GET_INPUT_TO_VEC(type, output_list)                                    \
+  const type& default_v_##type = TaskFlowTrait<type>::get_default_v();         \
+  std::vector<type> output_list(input.size());                                 \
+  for (unsigned int i = 0; i < input.size(); i++) {                            \
+    output_list[i] = get_value<type>(input[i], context.task_output, task_name, \
+                                     default_v_##type);                        \
   }
 
 #define RETURN_VAL(val) return std::any(std::move(val));
+
+#define BEGIN_REGISTER_DEFAULT_VALUE(type) \
+  template <>                              \
+  class TaskFlowTrait<type> {              \
+   public:                                 \
+    static const type get_default_v() {
+#define END_REGISTER_DEFAULT_VALUE \
+  }                                \
+  }                                \
+  ;

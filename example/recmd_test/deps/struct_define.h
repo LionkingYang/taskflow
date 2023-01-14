@@ -8,14 +8,15 @@
 #include <unordered_map>
 #include <vector>
 
+#include "taskflow/include/macros/macros.h"
+#include "taskflow/include/traits/type_traits.h"
+
 using std::string;
 using std::vector;
 
 struct RecmdRequest {
   std::string personid;
   int count;
-
-  RecmdRequest() : count(0) {}
 };
 
 struct Feed {
@@ -51,6 +52,15 @@ struct Blacklist {
 struct RecallResult {
   vector<Feed> recall_feeds;
 };
+
+BEGIN_REGISTER_DEFAULT_VALUE(RecallResult)
+RecallResult recall_result;
+Feed feed;
+feed.feedid = "ggggg";
+feed.posterid = "55555";
+recall_result.recall_feeds.push_back(feed);
+return recall_result;
+END_REGISTER_DEFAULT_VALUE
 
 struct RankResult {
   vector<Feed> rank_feeds;

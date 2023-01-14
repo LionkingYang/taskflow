@@ -64,7 +64,7 @@ void TaskManager::Run() {
             input_context_->task_config[task->GetTaskName()] =
                 task->GetTaskConfig();
             input_context_->task_output[task->GetTaskName()] =
-                func(*input_context_, input, task->GetTaskName());
+                move(func(*input_context_, input, task->GetTaskName()));
           } else {
             TASKFLOW_ERROR("func of {} is empty!", task->GetTaskName());
           }
