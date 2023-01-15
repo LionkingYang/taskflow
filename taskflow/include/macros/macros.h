@@ -923,10 +923,10 @@ const T& get_value(const string& key,
                    const string& task_name, const T& default_v) {
   if (task_output.find(key)) {
     try {
-      return std::any_cast<const T&>(task_output.at(key));
+      return *(std::any_cast<const T>(&(task_output.at(key))));
     } catch (const std::bad_any_cast& e) {
-      TASKFLOW_CRITICAL("{} fetch task {} output has error, check again!",
-                        task_name, key);
+      TASKFLOW_CRITICAL("{} fetch task {} output has error:{}, check again!",
+                        task_name, key, e.what());
       return default_v;
     }
   }
@@ -971,3 +971,5 @@ const T& get_value(const string& key,
   }                                \
   }                                \
   ;
+
+#define SET_ENV(key, value) context.task_env.emplace(key, value);

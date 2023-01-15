@@ -14,17 +14,18 @@ using std::string;
 using std::unordered_map;
 using std::vector;
 
-struct Job {
+struct NodeConf {
   string task_name;
+  vector<string> dependencies;
   string op_name;
   string config;
-  vector<string> dependencies;
+  string condition;
   bool async = false;
-  KCFG_DEFINE_FIELDS(task_name, op_name, config, dependencies, async)
+  KCFG_DEFINE_FIELDS(task_name, op_name, config, condition, async, dependencies)
 };
 
-struct Jobs {
-  vector<Job> tasks;
+struct GraphConf {
+  vector<NodeConf> tasks;
   KCFG_DEFINE_FIELDS(tasks)
   bool Init(const std::string& path) {
     kcfg::ParseFromJsonFile(path, *this);
@@ -37,6 +38,7 @@ struct TaskContext {
   const std::any global_input;
   std::any* global_output;
   taskflow::ConcurrentMap<string, std::any> task_output;
+  taskflow::ConcurrentMap<string, std::string> task_env;
   taskflow::ConcurrentMap<string, std::unordered_map<string, string>>
       task_config;
   TaskContext(const std::any& input, std::any* output)

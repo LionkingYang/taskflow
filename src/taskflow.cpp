@@ -8,12 +8,16 @@
 
 #include "taskflow/include/json/json_parser.h"
 #include "taskflow/include/utils/latency_guard.h"
+#include "taskflow/include/utils/string_utils.h"
 
+using std::pair;
 using std::string;
 using std::unordered_map;
 using std::vector;
 
 constexpr char kFuncPrefix[] = "func_";
+constexpr char kConditionRes[] = "res:";
+constexpr char kConditionEnv[] = "env:";
 namespace taskflow {
 
 TaskManager::TaskManager(std::shared_ptr<Graph> graph,
@@ -31,42 +35,108 @@ TaskManager::TaskManager(std::shared_ptr<Graph> graph,
   }
 }
 
+template <typename T>
+static inline bool JudgeCondition(const string& condition, const T& param_res,
+                                  const T& env_res) {
+  if (taskflow::Contains(condition, ">")) {
+    return param_res > env_res;
+  } else if (taskflow::Contains(condition, "<")) {
+    return param_res < env_res;
+  } else {
+    return param_res == env_res;
+  }
+}
+
+bool TaskManager::MatchCondition(const string& condition) {
+  if (taskflow::HasPrefix(condition, kConditionEnv)) {
+    string expr = condition.substr(4, condition.size() - 4);
+    vector<string> params = taskflow::StrSplitByChars(expr, ">=<|");
+
+    if (params.size() < 3) return false;
+    const auto& env_key = params[0];
+    const auto& env_value = params[1];
+    const auto& env_type = params[2];
+    if (!input_context_->task_env.find(env_key)) {
+      TASKFLOW_ERROR("env key:{} not found", env_key);
+      return false;
+    }
+    string env_res = input_context_->task_env.at(env_key);
+    if (env_type == "int") {
+      int int_res;
+      int int_env_res;
+      if (!absl::SimpleAtoi(params[1], &int_res)) return false;
+      if (!absl::SimpleAtoi(env_res, &int_env_res)) return false;
+      return JudgeCondition(condition, int_env_res, int_res);
+    } else if (env_type == "double") {
+      double double_res;
+      double double_env_res;
+      if (!absl::SimpleAtod(params[1], &double_res)) return false;
+      if (!absl::SimpleAtod(env_res, &double_env_res)) return false;
+      return JudgeCondition(condition, double_env_res, double_res);
+    } else if (env_type == "float") {
+      float float_res;
+      float float_env_res;
+      if (!absl::SimpleAtof(params[1], &float_res)) return false;
+      if (!absl::SimpleAtof(env_res, &float_env_res)) return false;
+      return JudgeCondition(condition, float_env_res, float_res);
+    } else {
+      return env_value == env_res;
+    }
+  }
+  return true;
+}
+
 void TaskManager::Run() {
-  while (uint64_t(finish_num_.load()) != graph_->GetTasks().size()) {
-    for (const auto& task : graph_->GetTasks()) {
+  while (uint64_t(finish_num_.load()) != graph_->GetNodes().size()) {
+    for (const auto& node : graph_->GetNodes()) {
       // 找出没有前置依赖并且还没执行的task
-      if (atomic_predecessor_count_[task->GetTaskName()]->load() == 0 &&
-          !map_in_progress_.find(task->GetTaskName())) {
+      const string& node_name = node->GetNodeName();
+      if (atomic_predecessor_count_[node_name]->load() == 0 &&
+          !map_in_progress_.find(node_name)) {
         // 设置执行状态为true
-        map_in_progress_.emplace(task->GetTaskName(), 1);
+        map_in_progress_.emplace(node_name, 1);
         // 构建task任务
-        auto done = [this, task] {
+        auto done = [this, node] {
           // 执行完之后，更新依赖此task任务的依赖数
-          if (graph_->GetSuccessorMap()->find(task->GetTaskName())) {
-            for (const auto& each :
-                 graph_->GetSuccessorMap()->at(task->GetTaskName())) {
-              atomic_predecessor_count_[each->GetTaskName()]->fetch_sub(1);
-            }
+
+          for (const auto& each : node->GetSuccessors()) {
+            atomic_predecessor_count_[each->GetNodeName()]->fetch_sub(1);
           }
 
           // 更新finish数组
           finish_num_.fetch_add(1);
         };
-        auto t = [this, task, done] {
+        if (switch_map_.find(node_name)) {
+          done();
+          continue;
+        }
+        auto task = node->GetTask();
+        if (!MatchCondition(task->GetCondition())) {
+          const auto& condition_map = graph_->GetConditionMap();
+          if (const auto& iter = condition_map.find(node_name);
+              iter != condition_map.end()) {
+            for (const auto& node : iter->second) {
+              switch_map_.emplace(node, 1);
+            }
+          }
+          done();
+          continue;
+        }
+        auto t = [this, node, task, done] {
           // 执行用户设定的task
           if (const auto func =
                   so_script_->GetFunc(kFuncPrefix + task->GetOpName());
               func != nullptr) {
             vector<std::string> input;
-            for (const auto& each : task->GetPredecessors()) {
-              input.emplace_back(each->GetTaskName());
+            for (const auto& each : node->GetPredecessors()) {
+              input.emplace_back(each->GetNodeName());
             }
-            input_context_->task_config[task->GetTaskName()] =
+            input_context_->task_config[node->GetNodeName()] =
                 task->GetTaskConfig();
-            input_context_->task_output[task->GetTaskName()] =
-                move(func(*input_context_, input, task->GetTaskName()));
+            input_context_->task_output[node->GetNodeName()] =
+                move(func(*input_context_, input, node->GetNodeName()));
           } else {
-            TASKFLOW_ERROR("func of {} is empty!", task->GetTaskName());
+            TASKFLOW_ERROR("func of {} is empty!", node->GetNodeName());
           }
           // 非异步任务，执行完之后，更新依赖此task任务的依赖数
           if (!task->is_async()) done();
@@ -86,6 +156,8 @@ std::string TaskManager::ToString() {
        begin != atomic_predecessor_count_.end(); begin++) {
     taskflow::StrAppend(&s, begin->first, ":", begin->second->load(), "\n");
   }
+  s += "graph:\n";
+  s += graph_->ToString();
   return s;
 }
 

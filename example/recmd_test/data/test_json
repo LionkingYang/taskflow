@@ -1,80 +1,69 @@
 {
-    "input_type": "RecmdRequest",
-    "output_type": "RecmdResponse",
     "tasks": [
         {
             "task_name": "ParseRequest",
-            "op_name": "ParseRequest",
             "dependencies": [],
-            "type": "string",
-            "use_input": "1"
+            "op_name": "ParseRequest"
         },
         {
             "task_name": "UU",
-            "op_name": "UU",
             "dependencies": [
                 "ParseRequest"
             ],
-            "type": "UserInfo"
+            "op_name": "UU"
         },
         {
             "task_name": "BlackList",
-            "op_name": "BlackList",
             "dependencies": [
                 "ParseRequest"
             ],
-            "type": "Blacklist"
+            "op_name": "BlackList"
         },
         {
             "task_name": "RecallCB",
-            "op_name": "RecallOP",
             "dependencies": [
                 "UU",
                 "BlackList"
             ],
-            "type": "RecallResult"
+            "op_name": "RecallOP",
+            "condition": "env:age>18|int"
         },
         {
             "task_name": "RecallEMB",
-            "op_name": "RecallOP",
             "dependencies": [
                 "UU",
                 "BlackList"
             ],
-            "type": "RecallResult"
+            "op_name": "RecallOP"
         },
         {
             "task_name": "RecallMerge",
-            "op_name": "RecallMerge",
             "dependencies": [
                 "RecallCB",
                 "RecallEMB"
             ],
-            "type": "RecallResult"
+            "op_name": "RecallMerge"
         },
         {
             "task_name": "Rank",
-            "op_name": "Rank",
             "dependencies": [
                 "RecallMerge"
             ],
-            "type": "RankResult"
+            "op_name": "Rank"
         },
         {
             "task_name": "Policy",
-            "op_name": "Policy",
             "dependencies": [
                 "Rank"
             ],
-            "type": "PolicyResult"
+            "op_name": "Policy"
         },
         {
             "task_name": "FillResponse",
-            "op_name": "FillResponse",
             "dependencies": [
                 "Policy"
             ],
-            "final_output": "1"
+            "op_name": "FillResponse"
         }
     ]
 }

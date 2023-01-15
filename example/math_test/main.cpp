@@ -20,9 +20,10 @@ using taskflow::TaskManager;
 // 使用json构建图
 void RunGraph() {
   // json文件地址
-  std::string json_path = "/data/svn2/taskflow/example/math_test/data/test_json";
+  std::string json_path =
+      "/home/lion/ops/taskflow/example/math_test/data/test_json";
   // 算子目录
-  std::string script_path = "/data/svn2/taskflow/example/math_test/ops";
+  std::string script_path = "/home/lion/ops/taskflow/example/math_test/ops";
   // 热加载图配置
   taskflow::ReloadableObj<taskflow::Graph> reloadable_graph(json_path);
   // 热加载算子图构建
@@ -30,10 +31,11 @@ void RunGraph() {
   // 初始化总的输入和输出
   auto output = std::any(0);
   for (int i = 0; i < 10; i++) {
-    auto input = std::any(static_cast<int>(random() % 100));
+    auto input = std::any(static_cast<int>(random() % 1000));
     TASKFLOW_INFO("{} input is:{}", i, std::any_cast<int>(input));
     // 从热更新图里获取最新的图
-    std::shared_ptr<Graph> graph = std::make_shared<Graph>(reloadable_graph.Get());
+    std::shared_ptr<Graph> graph =
+        std::make_shared<Graph>(reloadable_graph.Get());
     if (graph->GetCircle()) {
       TASKFLOW_CRITICAL("graph has circle reference, check agin");
       break;
@@ -41,6 +43,7 @@ void RunGraph() {
       // manager进行图运算，从json获取图组织方式
       taskflow::LatencyGuard guard("run graph");
       taskflow::TaskManager manager(graph, &so_script, input, &output);
+      manager.SetEnv("test", "100");
       manager.Run();
       // 打印最终的输出结果
       TASKFLOW_INFO("last res:{}", std::any_cast<int>(output));

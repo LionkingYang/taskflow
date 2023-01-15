@@ -4,7 +4,8 @@
             "task_name": "a",
             "op_name": "FetchInput",
             "dependencies": [],
-            "config": ""
+            "config": "",
+            "async": false
         },
         {
             "task_name": "b",
@@ -12,33 +13,18 @@
             "dependencies": [
                 "a"
             ],
-            "config": "num=5"
+            "config": "num=10",
+            "async": false,
+            "condition": "env:test>10|int"
         },
         {
             "task_name": "c",
-            "op_name": "AddNum",
-            "dependencies": [
-                "a"
-            ],
-            "config": "num=12"
-        },
-        {
-            "task_name": "d",
-            "op_name": "AccumMult",
-            "dependencies": [
-                "a",
-                "b",
-                "c"
-            ],
-            "config": ""
-        },
-        {
-            "task_name": "e",
             "op_name": "WriteOutput",
             "dependencies": [
-                "d"
+                "b"
             ],
-            "config": ""
+            "config": "",
+            "async": false
         }
     ]
 }
