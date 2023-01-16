@@ -38,7 +38,11 @@ TaskManager::TaskManager(std::shared_ptr<Graph> graph,
 template <typename T>
 static inline bool JudgeCondition(const string& condition, const T& param_res,
                                   const T& env_res) {
-  if (taskflow::Contains(condition, ">")) {
+  if (taskflow::Contains(condition, ">=")) {
+    return param_res >= env_res;
+  } else if (taskflow::Contains(condition, "<=")) {
+    return param_res <= env_res;
+  } else if (taskflow::Contains(condition, ">")) {
     return param_res > env_res;
   } else if (taskflow::Contains(condition, "<")) {
     return param_res < env_res;
@@ -50,8 +54,7 @@ static inline bool JudgeCondition(const string& condition, const T& param_res,
 bool TaskManager::MatchCondition(const string& condition) {
   if (taskflow::HasPrefix(condition, kConditionEnv)) {
     string expr = condition.substr(4, condition.size() - 4);
-    vector<string> params = taskflow::StrSplitByChars(expr, ">=<|");
-
+    vector<string> params = taskflow::StrSplitByChars(expr, ">=<|", true);
     if (params.size() < 3) return false;
     const auto& env_key = params[0];
     const auto& env_value = params[1];
@@ -111,7 +114,8 @@ void TaskManager::Run() {
           continue;
         }
         auto task = node->GetTask();
-        if (!MatchCondition(task->GetCondition())) {
+        if (!task->GetCondition().empty() &&
+            !MatchCondition(task->GetCondition())) {
           const auto& condition_map = graph_->GetConditionMap();
           if (const auto& iter = condition_map.find(node_name);
               iter != condition_map.end()) {

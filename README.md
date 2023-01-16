@@ -38,6 +38,7 @@ TaskFlow的执行存在以下难点：
 - 算子和图的热更新
 - 算子配置注入
 - 支持任务异步执行
+- 支持流图执行中的条件判断
 - 基于spdlog的多级日志支持
 - 简单易用的对象池
 - 简单易用的LatencyDebug工具
@@ -60,7 +61,8 @@ TaskFlow的执行存在以下难点：
         "use_input": "1",
         "config": "a=1|b=2",
         "final_output": "1",
-        "async":true
+        "async":true,
+      	"condition": "env:param>10|int"
     }]
 }
 ```
@@ -75,6 +77,7 @@ TaskFlow的执行存在以下难点：
 - config: **可选**。配置格式：**k1=v1|k2=v2|k3=v3**。任务的配置，注入算子的配置，可在算子中直接用宏**GET_CONFIG_KEY**获取。
 - final_output: **可选，但是只能有一个算子设置**。全图只能有一个对外输出算子， 如果填写了此字段且字段值为"1"，自动生成项目算子代码时，该算子中会出现**WRITE_TO_FINAL_OUTPUT**宏。
 - async: **可选，默认为false**。是否为异步任务，对于异步任务，引擎不会等待其返回结果，因此**异步任务不建议作为其他任务的依赖**。
+- condition: **可选**。算子执行的条件，其中env代表通过用户设置的环境变量来判断条件是否成立，param为用户设置的环境变量名，用户可以通过SET_ENV(key, value)宏在算子中设置环境变量的值，或者使用TaskManager的SetEnv函数来设置。目前支持: **>=, <=, >, <, =**五种条件判断。int代表输入的value为整形，目前支持**int, double, float, string**四种类型。
 
 ### 算子编写
 
@@ -92,6 +95,7 @@ BEGIN_OP(b) {
   GET_INPUT(0, int, a_output);
   GET_CONFIG_KEY("num", int, value, 0);
   // write your code here
+  SET_ENV("param", "1") // set env if you need
   RETURN_VAL(value);
 }
 END_OP
@@ -123,6 +127,8 @@ END_OP
 
 - **WRITE_TO_FINAL_OUTPUT(type, final_output)** 将type类型名为final_output的变量值赋给全局输出。此处需要注意type需与你定义的全局输出类型一致，否则会有bad_cast的风险。 (**采用自动生成的算子可以规避此风险**)
 
+- **SET_ENV(key, value)** 设置环境变量key=value，其中key和value都需要为字符串类型。
+
 - **RETURN_VAL(output)** return语句，展开为:return std::any(output) 如果该算子不需要return结果，可以直接RETURN_VAL(0)。
 
 ### 默认值设置
@@ -151,6 +157,54 @@ feed.posterid = "55555";
 recall_result.recall_feeds.push_back(feed);
 return recall_result;
 END_REGISTER_DEFAULT_VALUE
+```
+
+### 条件执行
+
+在流图执行中，可能存在这样的需求，某些任务的执行需要满足一定的触发条件，只有满足了该触发条件，**该任务及完全依赖其的任务**才能继续执行；反之，该任务及完全依赖其的任务形成的这一个子图都无法执行。为了实现该功能，本框架引入了条件执行的方案，每个任务都可以配置其执行条件，类似于：
+
+```shell
+env:param>=10|int
+```
+
+设置之后，流图会变成如下：
+
+```mermaid
+graph LR
+   a((a:FetchInput))
+condition0{rhombus }
+a((a:FetchInput)) --> condition0{env:param>==10}
+condition0{env:param>=10} --> b((b:AddNum))
+a((a:FetchInput)) --> c((c:AddNum))
+c((c:AddNum)) --> d((d:MultNum))
+b((b:AddNum)) --> e((e:AccumAdd))
+d((d:MultNum)) --> e((e:AccumAdd))
+```
+
+用户可以在任意算子(不过为了能够生效，最好在改condition算子执行前注入数据)中通过SET_ENV("param", "100")或者在执行TaskManager::Run()之前通过TaskManager.SetEnv("param", "100")函数设置环境变量。如上图，若param>=10条件未满足，b不会执行，e任务会拿到b的默认值。
+
+这里需要解释的一个概念是：**一个任务，完全依赖其的任务是什么?**
+
+对于一个任务a，若b任务只有一个依赖，那么b是完全依赖a的任务，这个时候有个任务c，他依赖a,b任务，他的依赖任务都和a存在直接的关系，因此c也是完全依赖a的任务。那么如果有个任务d，他依赖了a的同时，还依赖了一个外部任务e，那么d就不是完全依赖a的任务。基于此逻辑，我们可以通过广度遍历先找到父任务所有的下游任务，可以基于其构造出一个map m；然后通过深度遍历遍历一遍父任务的下游任务，如果这个任务的依赖任务存在不属于m的情况，那么这个任务就不是完全依赖该父任务的任务，停止深度遍历；反之代表该任务完全依赖父任务。如此可以找到一个父任务能够完全控制的下游任务节点。
+
+如下图一个比较复杂的任务，完全依赖b任务的下游任务是f任务以及g任务。
+
+```mermaid
+graph LR
+   a((a:FetchInput))
+condition0{rhombus }
+a((a:FetchInput)) --> condition0{env:param>=10}
+condition0{env:param>=10} --> b((b:AddNum))
+a((a:FetchInput)) --> c((c:AddNum))
+c((c:AddNum)) --> d((d:MultNum))
+b((b:AddNum)) --> e((e:AccumAdd))
+d((d:MultNum)) --> e((e:AccumAdd))
+b((b:AddNum)) --> f((f:AddNum))
+f((f:AddNum)) --> g((g:AddNum))
+e((e:AccumAdd)) --> h((h:AccumAdd))
+g((g:AddNum)) --> h((h:AccumAdd))
+f((f:AddNum)) --> h((h:AccumAdd))
+
 ```
 
 

@@ -45,8 +45,12 @@ static inline vector<string> StrSplit(const string& word,
 }
 
 static inline vector<string> StrSplitByChars(const string& word,
-                                             const string& delimter) {
-  return absl::StrSplit(word, absl::ByAnyChar(delimter));
+                                             const string& delimter,
+                                             bool skipEmpty = false) {
+  if (skipEmpty)
+    return absl::StrSplit(word, absl::ByAnyChar(delimter), absl::SkipEmpty());
+  else
+    return absl::StrSplit(word, absl::ByAnyChar(delimter));
 }
 
 }  // namespace taskflow

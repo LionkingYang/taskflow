@@ -35,7 +35,6 @@ class Graph {
     }
     CircleCheck();
     BuildConditionMap();
-    TASKFLOW_INFO(ToString());
     return true;
   }
 

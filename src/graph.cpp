@@ -125,30 +125,30 @@ void Graph::BuildConditionMap() {
 
 std::string Graph::ToString() {
   std::string s;
-  s += "predecessor map:\n";
+  taskflow::StrAppend(&s, "predecessor map:\n");
   for (auto begin = predecessor_count_.begin();
        begin != predecessor_count_.end(); begin++) {
     taskflow::StrAppend(&s, begin->first, ":", begin->second, "\n");
   }
-  s += "dependency map:\n";
+  taskflow::StrAppend(&s, "dependency map:\n");
   for (auto node : node_map_) {
-    s += node.first + "|Succ:";
+    taskflow::StrAppend(&s, node.first + "|Succ:");
     for (auto succ : node.second->GetSuccessors()) {
-      s += succ->GetNodeName();
+      taskflow::StrAppend(&s, succ->GetNodeName());
     }
-    s += "|Pred:";
+    taskflow::StrAppend(&s, "|Pred:");
     for (auto succ : node.second->GetPredecessors()) {
-      s += succ->GetNodeName();
+      taskflow::StrAppend(&s, succ->GetNodeName());
     }
-    s += "\n";
+    taskflow::StrAppend(&s, "\n");
   }
-  s += "condition map:\n";
+  taskflow::StrAppend(&s, "condition map:\n");
   for (const auto& cond : condition_map_) {
-    s += cond.first + "|";
+    taskflow::StrAppend(&s, cond.first + "|");
     for (const auto& each : cond.second) {
-      s += each + ":";
+      taskflow::StrAppend(&s, each + ":");
     }
-    s += "\n";
+    taskflow::StrAppend(&s, "\n");
   }
   return s;
 }

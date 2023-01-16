@@ -13,15 +13,54 @@
             "dependencies": [
                 "a"
             ],
-            "config": "num=10",
+            "config": "num=1",
+            "async": false,
+            "condition": "env:test>=99.9|double"
+        },
+        {
+            "task_name": "c",
+            "op_name": "AddNum",
+            "dependencies": [
+                "b"
+            ],
+            "config": "num=200",
             "async": false,
             "condition": "env:test>10|int"
         },
         {
-            "task_name": "c",
-            "op_name": "WriteOutput",
+            "task_name": "d",
+            "op_name": "MultNum",
             "dependencies": [
                 "b"
+            ],
+            "config": "num=3",
+            "async": false
+        },
+        {
+            "task_name": "e",
+            "op_name": "AddNum",
+            "dependencies": [
+                "b"
+            ],
+            "config": "num=4",
+            "async": false
+        },
+        {
+            "task_name": "f",
+            "op_name": "AccumAdd",
+            "dependencies": [
+                "c",
+                "d",
+                "e"
+            ],
+            "config": "",
+            "async": false
+        },
+        {
+            "task_name": "g",
+            "op_name": "WriteOutput",
+            "dependencies": [
+                "f"
             ],
             "config": "",
             "async": false
