@@ -181,7 +181,7 @@ b((b:AddNum)) --> e((e:AccumAdd))
 d((d:MultNum)) --> e((e:AccumAdd))
 ```
 
-用户可以在任意算子(不过为了能够生效，最好在改condition算子执行前注入数据)中通过SET_ENV("param", "100")或者在执行TaskManager::Run()之前通过TaskManager.SetEnv("param", "100")函数设置环境变量。如上图，若param>=10条件未满足，b不会执行，e任务会拿到b的默认值。
+用户可以在任意算子(不过为了能够生效，最好在该condition任务执行前注入数据)中通过SET_ENV("param", "100")或者在执行TaskManager::Run()之前通过TaskManager.SetEnv("param", "100")函数设置环境变量。如上图，若param>=10条件未满足，b不会执行，e任务会拿到b的默认值。
 
 这里需要解释的一个概念是：**一个任务，完全依赖其的任务是什么?**
 
