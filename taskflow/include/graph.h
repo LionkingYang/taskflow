@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -15,9 +16,10 @@
 #include "taskflow/include/task.h"
 
 using std::unordered_map;
+using std::unordered_set;
 using std::vector;
-using taskflow::Task;
-using taskflow::TaskPtr;
+using taskflow::Node;
+using taskflow::NodePtr;
 
 namespace taskflow {
 class Graph {
@@ -26,41 +28,41 @@ class Graph {
   bool Init(const string& graph_path) {
     is_circle_ = false;
     predecessor_count_.clear();
-    successor_map_.clear();
-    map_finish_.clear();
-    tasks_.clear();
+    condition_map_.clear();
+    nodes_.clear();
     if (!BuildFromJson(graph_path)) {
       return false;
     }
-    BuildDependencyMap();
     CircleCheck();
+    BuildConditionMap();
     return true;
   }
 
-  const taskflow::ConcurrentMap<string, vector<TaskPtr>>* GetSuccessorMap() {
-    return &successor_map_;
-  }
   const std::unordered_map<string, int>& GetPredecessorCount() {
     return predecessor_count_;
   }
-
-  const vector<TaskPtr>& GetTasks() { return tasks_; }
-
+  const vector<NodePtr>& GetNodes() { return nodes_; }
   bool GetCircle() { return is_circle_; }
-
   std::string ToString();
+  unordered_map<string, unordered_set<string>>& GetConditionMap() {
+    return condition_map_;
+  }
 
  private:
-  void BuildDependencyMap();
   bool BuildFromJson(const string& graph_path);
   void CircleCheck();
+  unordered_set<string> FindConditionInfer(const string& node_name);
+  void DFS(const string& node_name,
+           const unordered_map<string, string>& visited,
+           unordered_set<string>& res);
+  void BuildConditionMap();
 
  private:
   unordered_map<string, int> predecessor_count_;
-  taskflow::ConcurrentMap<string, vector<TaskPtr>> successor_map_;
-  taskflow::ConcurrentMap<string, int> map_finish_;
-  vector<TaskPtr> tasks_;
+  vector<NodePtr> nodes_;
+  unordered_map<string, NodePtr> node_map_;
   bool is_circle_ = false;
+  unordered_map<string, unordered_set<string>> condition_map_;
 };
 
 }  // namespace taskflow

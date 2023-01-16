@@ -42,10 +42,13 @@ class TaskManager {
   void Run();
   ~TaskManager() { Clear(); }
   void Clear();
+  void SetEnv(const string& key, const string& value) {
+    input_context_->task_env.emplace(key, value);
+  }
 
  private:
-  void HandleTask(const taskflow::TaskPtr task);
   string ToString();
+  bool MatchCondition(const string& condition);
 
  private:
   taskflow::ConcurrentMap<string, std::shared_ptr<std::atomic_int>>
@@ -55,5 +58,6 @@ class TaskManager {
   taskflow::ConcurrentMap<string, int> map_in_progress_;
   TaskContext* input_context_;
   std::atomic<int> finish_num_ = 0;
+  taskflow::ConcurrentMap<string, int> switch_map_;
 };
 }  // namespace taskflow

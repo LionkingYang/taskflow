@@ -23,7 +23,8 @@ using taskflow::TaskManager;
 extern "C" {
 BEGIN_OP(ParseRequest) {
   GET_GLOBAL_INPUT(RecmdRequest, request);
-  TASKFLOW_INFO("request personid:{}, request count:{}", request.personid, request.count);
+  TASKFLOW_INFO("request personid:{}, request count:{}", request.personid,
+                request.count);
   RETURN_VAL(request.personid);
 }
 END_OP
@@ -55,6 +56,7 @@ BEGIN_OP(UU) {
   interest2.score = 0.7;
   interest2.tag = "comedy";
   user.short_term_interest.emplace_back(std::move(interest));
+  SET_ENV("age", std::to_string(user.age))
   RETURN_VAL(user);
 }
 END_OP
@@ -67,7 +69,8 @@ BEGIN_OP(RecallOP) {
   vector<string> posters = {"11111", "33333", "55555"};
   vector<Feed> recall_feeds;
   for (uint64_t i = 0; i < feeds.size(); i++) {
-    if (!blacklist.black_feeds.count(feeds[i]) && !blacklist.black_posters.count(posters[i])) {
+    if (!blacklist.black_feeds.count(feeds[i]) &&
+        !blacklist.black_posters.count(posters[i])) {
       Feed feed;
       feed.feedid = feeds[i];
       feed.posterid = posters[i];
@@ -107,8 +110,9 @@ END_OP
 
 BEGIN_OP(Policy) {
   GET_MUTABLE_INPUT(0, RankResult, rank_result);
-  std::sort(rank_result.rank_feeds.begin(), rank_result.rank_feeds.end(),
-            [](Feed f1, Feed f2) { return f1.score_map["aa"] > f2.score_map["aa"]; });
+  std::sort(
+      rank_result.rank_feeds.begin(), rank_result.rank_feeds.end(),
+      [](Feed f1, Feed f2) { return f1.score_map["aa"] > f2.score_map["aa"]; });
   PolicyResult policy_result;
   policy_result.policy_feeds.swap(rank_result.rank_feeds);
   RETURN_VAL(policy_result);

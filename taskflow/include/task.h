@@ -14,32 +14,47 @@
 #include "taskflow/include/utils/string_utils.h"
 
 namespace taskflow {
-class Task;
-using TaskPtr = std::shared_ptr<Task>;
+
 class Task {
  public:
-  explicit Task(const string& task_name, const string& op_name,
-                const string& config, bool async)
-      : task_name_(task_name), op_name_(op_name), async_(async) {
+  explicit Task(const string& op_name, const string& config,
+                const string& condition, bool async)
+      : op_name_(op_name), condition_(condition), async_(async) {
     config_map_ = taskflow::split_twice(config, "|", "=");
   }
-  const string& GetTaskName() const { return task_name_; }
   const string& GetOpName() const { return op_name_; }
   const std::unordered_map<std::string, std::string>& GetTaskConfig() const {
     return config_map_;
   }
-  int GetPredecessorCount() const { return predecessors_.size(); }
-  const vector<TaskPtr>& GetPredecessors() const { return predecessors_; }
-
-  void AddPredecessor(TaskPtr task) { predecessors_.emplace_back(task); }
-
+  const string& GetCondition() { return condition_; }
   bool is_async() { return async_; }
 
  private:
-  const string task_name_;
   const string op_name_;
+  const string condition_;
   std::unordered_map<std::string, std::string> config_map_;
-  vector<TaskPtr> predecessors_;
   bool async_;
+};
+using TaskPtr = std::shared_ptr<Task>;
+
+class Node;
+using NodePtr = std::shared_ptr<Node>;
+class Node {
+ public:
+  Node(const string& node_name, TaskPtr task_ptr)
+      : node_name_(node_name), task_(task_ptr) {}
+  const string& GetNodeName() { return node_name_; }
+  const TaskPtr GetTask() { return task_; }
+  void AddPredecessor(NodePtr node) { predecessors_.push_back(node); }
+  void AddSuccessor(NodePtr node) { successors_.push_back(node); }
+  int GetPredecessorCount() const { return predecessors_.size(); }
+  const vector<NodePtr>& GetPredecessors() const { return predecessors_; }
+  const vector<NodePtr>& GetSuccessors() const { return successors_; }
+
+ private:
+  const string node_name_;
+  vector<NodePtr> predecessors_;
+  vector<NodePtr> successors_;
+  TaskPtr task_ = nullptr;
 };
 }  // namespace taskflow
