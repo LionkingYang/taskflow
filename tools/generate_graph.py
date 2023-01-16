@@ -19,16 +19,37 @@ def generate_code(tasks: map) -> str:
     task_map = {}
     for each in tasks["tasks"]:
         task_map[each["task_name"]] = each
-    template = """```mermaid
+    template = """
 graph LR
    {}
-```"""
+"""
     body = ""
+    if len(tasks["tasks"]) == 0:
+        return template.format("a((NO_TASK))")
     template2 = "{}(({})) --> {}(({}))\n"
+    template1 = "{}(({}))\n"
+    template3 = "{}{{{}}} --> {}(({}))\n"
+    template4 = "{}(({})) --> {}{{{}}}\n"
+    i = 0
     for each in tasks["tasks"]:
-        for dep in each["dependencies"]:
-            body += template2.format(dep, dep+":"+task_map[dep]["op_name"],
-                                     each["task_name"], each["task_name"]+":"+each["op_name"])
+        if each["async"]:
+            body += "style {} rhombus stroke-width:2px,stroke-dasharray: 5, 5\n".format(
+                each["task_name"])
+        if len(each["dependencies"]) > 0:
+            for dep in each["dependencies"]:
+                if "condition" not in each or len(each["condition"]) == 0:
+                    body += template2.format(dep, dep+":"+task_map[dep]["op_name"],
+                                             each["task_name"], each["task_name"]+":"+each["op_name"])
+                else:
+                    body += "{}{{rhombus }}\n".format("condition{}".format(i))
+                    body += template4.format(dep, dep+":"+task_map[dep]["op_name"],
+                                             "condition{}".format(i), each["condition"].split("|")[:-1][0])
+                    body += template3.format("condition{}".format(i), each["condition"].split("|")[:-1][0],
+                                             each["task_name"], each["task_name"]+":"+each["op_name"])
+                    i += 1
+        else:
+            body += template1.format(each["task_name"],
+                                     each["task_name"]+":"+each["op_name"])
     return template.format(body)
 
 
