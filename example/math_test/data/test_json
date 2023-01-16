@@ -14,7 +14,8 @@
                 "a"
             ],
             "config": "num=5",
-            "async": false
+            "async": false,
+            "condition": "env:test>=100|int"
         },
         {
             "task_name": "c",

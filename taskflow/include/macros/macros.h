@@ -929,6 +929,9 @@ const T& get_value(const string& key,
                         task_name, key, e.what());
       return default_v;
     }
+  } else {
+    TASKFLOW_WARN("{} task cannot find {}'s output, check again!", task_name,
+                  key);
   }
   return default_v;
 }

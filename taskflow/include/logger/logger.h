@@ -43,13 +43,12 @@ static void init_loggers(const std::string &dir, const std::string &level,
 }
 }  // namespace taskflow
 
-#define TASKFLOW_CRITICAL(...)                    \
-  do {                                            \
-    auto logger = spdlog::default_logger_raw();   \
-    if (logger->should_log(spdlog::level::err)) { \
-      SPDLOG_CRITICAL(__VA_ARGS__);               \
-    }                                             \
-                                                  \
+#define TASKFLOW_CRITICAL(...)                         \
+  do {                                                 \
+    auto logger = spdlog::default_logger_raw();        \
+    if (logger->should_log(spdlog::level::critical)) { \
+      SPDLOG_CRITICAL(__VA_ARGS__);                    \
+    }                                                  \
   } while (0)
 
 #define TASKFLOW_ERROR(...)                       \
@@ -58,32 +57,36 @@ static void init_loggers(const std::string &dir, const std::string &level,
     if (logger->should_log(spdlog::level::err)) { \
       SPDLOG_ERROR(__VA_ARGS__);                  \
     }                                             \
-                                                  \
   } while (0)
 
-#define TASKFLOW_INFO(...)                        \
-  do {                                            \
-    auto logger = spdlog::default_logger_raw();   \
-    if (logger->should_log(spdlog::level::err)) { \
-      SPDLOG_INFO(__VA_ARGS__);                   \
-    }                                             \
-                                                  \
+#define TASKFLOW_INFO(...)                         \
+  do {                                             \
+    auto logger = spdlog::default_logger_raw();    \
+    if (logger->should_log(spdlog::level::info)) { \
+      SPDLOG_INFO(__VA_ARGS__);                    \
+    }                                              \
   } while (0)
 
-#define TASKFLOW_DEBUG(...)                       \
-  do {                                            \
-    auto logger = spdlog::default_logger_raw();   \
-    if (logger->should_log(spdlog::level::err)) { \
-      SPDLOG_DEBUG(__VA_ARGS__);                  \
-    }                                             \
-                                                  \
+#define TASKFLOW_DEBUG(...)                         \
+  do {                                              \
+    auto logger = spdlog::default_logger_raw();     \
+    if (logger->should_log(spdlog::level::debug)) { \
+      SPDLOG_DEBUG(__VA_ARGS__);                    \
+    }                                               \
   } while (0)
 
-#define TASKFLOW_TRACE(...)                       \
-  do {                                            \
-    auto logger = spdlog::default_logger_raw();   \
-    if (logger->should_log(spdlog::level::err)) { \
-      SPDLOG_TRACE(__VA_ARGS__);                  \
-    }                                             \
-                                                  \
+#define TASKFLOW_TRACE(...)                         \
+  do {                                              \
+    auto logger = spdlog::default_logger_raw();     \
+    if (logger->should_log(spdlog::level::trace)) { \
+      SPDLOG_TRACE(__VA_ARGS__);                    \
+    }                                               \
+  } while (0)
+
+#define TASKFLOW_WARN(...)                         \
+  do {                                             \
+    auto logger = spdlog::default_logger_raw();    \
+    if (logger->should_log(spdlog::level::warn)) { \
+      SPDLOG_WARN(__VA_ARGS__);                    \
+    }                                              \
   } while (0)
