@@ -21,7 +21,7 @@ def generate_code(tasks: map) -> str:
         task_map[each["task_name"]] = each
     template = """
 graph LR
-   {}
+{}
 """
     body = ""
     if len(tasks["tasks"]) == 0:
@@ -32,7 +32,7 @@ graph LR
     template4 = "{}(({})) --> {}{{{}}}\n"
     i = 0
     for each in tasks["tasks"]:
-        if each["async"]:
+        if "async" in each and each["async"]:
             body += "style {} rhombus stroke-width:2px,stroke-dasharray: 5, 5\n".format(
                 each["task_name"])
         if len(each["dependencies"]) > 0:
