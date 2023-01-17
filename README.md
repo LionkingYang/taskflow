@@ -95,7 +95,8 @@ BEGIN_OP(b) {
   GET_INPUT(0, int, a_output);
   GET_CONFIG_KEY("num", int, value, 0);
   // write your code here
-  SET_ENV("param", "1") // set env if you need
+  SET_ENV("param", "1"); // set env if you need
+  GET_ENV("param", int, param_value, 0);
   RETURN_VAL(value);
 }
 END_OP
@@ -113,7 +114,7 @@ END_OP
 
 - **BEGIN_OP(op_name) { ... ...} END_OP;** 该宏为一对组合，标记着任务算子的开始与结束，其中BEGIN_OP()括号中填写算子，**该算子名应与图配置文件中的op_name对应**。
 
-- **GET_CONFIG_KEY(key, type, output, default_v** 该宏读取key键对应的算子配置，并且将结果赋值给output。读取key的配置，并且转化为type类型(目前支持:string, double, int, float），如果类型转换失败或者未配置，返回default_v。
+- **GET_CONFIG_KEY(key, type, output, default_v)** 该宏读取key键对应的算子配置，并且将结果赋值给output。读取key的配置，并且转化为type类型(目前支持:string, double, int, float），如果类型转换失败或者未配置，返回default_v。
 
 - **DEBUG_CONFIG(task_name)** debug宏，遍历算子配置并且打印log。
 
@@ -128,6 +129,8 @@ END_OP
 - **WRITE_TO_FINAL_OUTPUT(type, final_output)** 将type类型名为final_output的变量值赋给全局输出。此处需要注意type需与你定义的全局输出类型一致，否则会有bad_cast的风险。 (**采用自动生成的算子可以规避此风险**)
 
 - **SET_ENV(key, value)** 设置环境变量key=value，其中key和value都需要为字符串类型。
+
+- **GET_ENV(key, type, output, default_v)** 获取key的环境变量，并且将其转换为type类型(目前支持string,int,double,float)，并且把结果赋值给output变量，若转化失败或者key不存在，赋值为defaul_v
 
 - **RETURN_VAL(output)** return语句，展开为:return std::any(output) 如果该算子不需要return结果，可以直接RETURN_VAL(0)。
 

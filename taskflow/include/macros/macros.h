@@ -976,3 +976,17 @@ const T& get_value(const string& key,
   ;
 
 #define SET_ENV(key, value) context.task_env.emplace(key, value);
+
+#define GET_ENV(key, type, v, default_v)                                     \
+  type v = default_v;                                                        \
+  if (context.task_env.count(key)) {                                         \
+    const auto& origin_v = context.task_env[key];                            \
+    if (!ValueTrans<type>(origin_v, &v)) {                                   \
+      TASKFLOW_ERROR("task {} config {} type not match, use default",        \
+                     task_name, key);                                        \
+      v = default_v;                                                         \
+    }                                                                        \
+  } else {                                                                   \
+    TASKFLOW_ERROR("task {} config {} has no value, use default", task_name, \
+                   key);                                                     \
+  }
