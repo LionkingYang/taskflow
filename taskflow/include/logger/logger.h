@@ -3,7 +3,6 @@
 // license information.
 
 #pragma once
-#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,7 +14,8 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 
-namespace fs = std::filesystem;
+#include "taskflow/include/utils/file_helper.h"
+
 namespace taskflow {
 static void init_loggers(const std::string &dir, const std::string &level,
                          bool logstderr) {

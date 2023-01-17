@@ -12,6 +12,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/strip.h"
 
 using std::string;
 using std::vector;
@@ -53,4 +54,5 @@ static inline vector<string> StrSplitByChars(const string& word,
     return absl::StrSplit(word, absl::ByAnyChar(delimter));
 }
 
+static void TrimSpace(string* word) { absl::StripAsciiWhitespace(word); }
 }  // namespace taskflow

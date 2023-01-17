@@ -51,40 +51,54 @@ static inline bool JudgeCondition(const string& condition, const T& param_res,
   }
 }
 
+bool TaskManager::OneCondition(const string& expr) {
+  vector<string> params = taskflow::StrSplitByChars(expr, ">=<|", true);
+  std::for_each(params.begin(), params.end(),
+                [](string& s) { taskflow::TrimSpace(&s); });
+  if (params.size() < 3) return false;
+  const auto& env_key = params[0];
+  const auto& env_value = params[1];
+  const auto& env_type = params[2];
+  if (!input_context_->task_env.find(env_key)) {
+    TASKFLOW_ERROR("env key:{} not found", env_key);
+    return false;
+  }
+  string env_res = input_context_->task_env.at(env_key);
+  if (env_type == "int") {
+    int int_res;
+    int int_env_res;
+    if (!absl::SimpleAtoi(params[1], &int_res)) return false;
+    if (!absl::SimpleAtoi(env_res, &int_env_res)) return false;
+    return JudgeCondition(expr, int_env_res, int_res);
+  } else if (env_type == "double") {
+    double double_res;
+    double double_env_res;
+    if (!absl::SimpleAtod(params[1], &double_res)) return false;
+    if (!absl::SimpleAtod(env_res, &double_env_res)) return false;
+    return JudgeCondition(expr, double_env_res, double_res);
+  } else if (env_type == "float") {
+    float float_res;
+    float float_env_res;
+    if (!absl::SimpleAtof(params[1], &float_res)) return false;
+    if (!absl::SimpleAtof(env_res, &float_env_res)) return false;
+    return JudgeCondition(expr, float_env_res, float_res);
+  } else {
+    return env_value == env_res;
+  }
+}
+
 bool TaskManager::MatchCondition(const string& condition) {
   if (taskflow::HasPrefix(condition, kConditionEnv)) {
-    string expr = condition.substr(4, condition.size() - 4);
-    vector<string> params = taskflow::StrSplitByChars(expr, ">=<|", true);
-    if (params.size() < 3) return false;
-    const auto& env_key = params[0];
-    const auto& env_value = params[1];
-    const auto& env_type = params[2];
-    if (!input_context_->task_env.find(env_key)) {
-      TASKFLOW_ERROR("env key:{} not found", env_key);
-      return false;
+    string expr_str = condition.substr(4, condition.size() - 4);
+    vector<string> exprs = taskflow::StrSplit(expr_str, "&&");
+    std::for_each(exprs.begin(), exprs.end(),
+                  [](string& s) { taskflow::TrimSpace(&s); });
+    for (const auto& expr : exprs) {
+      if (!OneCondition(expr)) {
+        return false;
+      }
     }
-    string env_res = input_context_->task_env.at(env_key);
-    if (env_type == "int") {
-      int int_res;
-      int int_env_res;
-      if (!absl::SimpleAtoi(params[1], &int_res)) return false;
-      if (!absl::SimpleAtoi(env_res, &int_env_res)) return false;
-      return JudgeCondition(condition, int_env_res, int_res);
-    } else if (env_type == "double") {
-      double double_res;
-      double double_env_res;
-      if (!absl::SimpleAtod(params[1], &double_res)) return false;
-      if (!absl::SimpleAtod(env_res, &double_env_res)) return false;
-      return JudgeCondition(condition, double_env_res, double_res);
-    } else if (env_type == "float") {
-      float float_res;
-      float float_env_res;
-      if (!absl::SimpleAtof(params[1], &float_res)) return false;
-      if (!absl::SimpleAtof(env_res, &float_env_res)) return false;
-      return JudgeCondition(condition, float_env_res, float_res);
-    } else {
-      return env_value == env_res;
-    }
+    return true;
   }
   return true;
 }

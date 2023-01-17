@@ -49,6 +49,7 @@ class TaskManager {
  private:
   string ToString();
   bool MatchCondition(const string& condition);
+  bool OneCondition(const string& expr);
 
  private:
   taskflow::ConcurrentMap<string, std::shared_ptr<std::atomic_int>>
