@@ -166,7 +166,10 @@ END_REGISTER_DEFAULT_VALUE
 ```shell
 env:param>=10|int
 ```
-
+支持配置多个触发条件：
+```shell
+env:param>=10|int&&param<=20|int
+```
 设置之后，流图会变成如下：
 
 ```mermaid
