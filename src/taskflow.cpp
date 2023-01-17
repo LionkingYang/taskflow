@@ -53,8 +53,7 @@ static inline bool JudgeCondition(const string& condition, const T& param_res,
 
 bool TaskManager::OneCondition(const string& expr) {
   vector<string> params = taskflow::StrSplitByChars(expr, ">=<|", true);
-  std::for_each(params.begin(), params.end(),
-                [](string& s) { taskflow::TrimSpace(&s); });
+  taskflow::TrimSpaceOfVector(&params);
   if (params.size() < 3) return false;
   const auto& env_key = params[0];
   const auto& env_value = params[1];
@@ -91,8 +90,7 @@ bool TaskManager::MatchCondition(const string& condition) {
   if (taskflow::HasPrefix(condition, kConditionEnv)) {
     string expr_str = condition.substr(4, condition.size() - 4);
     vector<string> exprs = taskflow::StrSplit(expr_str, "&&");
-    std::for_each(exprs.begin(), exprs.end(),
-                  [](string& s) { taskflow::TrimSpace(&s); });
+    taskflow::TrimSpaceOfVector(&exprs);
     for (const auto& expr : exprs) {
       if (!OneCondition(expr)) {
         return false;

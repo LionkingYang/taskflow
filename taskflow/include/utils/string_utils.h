@@ -55,4 +55,8 @@ static inline vector<string> StrSplitByChars(const string& word,
 }
 
 static void TrimSpace(string* word) { absl::StripAsciiWhitespace(word); }
+
+static void TrimSpaceOfVector(std::vector<std::string>* vec) {
+  std::for_each(vec->begin(), vec->end(), [](string& s) { TrimSpace(&s); });
+}
 }  // namespace taskflow
