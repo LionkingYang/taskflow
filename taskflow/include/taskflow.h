@@ -9,6 +9,7 @@
 #include <atomic>
 #include <functional>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -52,13 +53,12 @@ class TaskManager {
   bool OneCondition(const string& expr);
 
  private:
-  taskflow::ConcurrentMap<string, std::shared_ptr<std::atomic_int>>
-      atomic_predecessor_count_;
   std::shared_ptr<Graph> graph_;
   taskflow::SoScript* so_script_;
-  taskflow::ConcurrentMap<string, int> map_in_progress_;
   TaskContext* input_context_;
-  std::atomic<int> finish_num_ = 0;
   taskflow::ConcurrentMap<string, int> switch_map_;
+  std::vector<std::shared_ptr<std::atomic_int>> predecessor_count_array_;
+  std::unordered_map<string, int> index_map_;
+  std::vector<std::future<void>> aync_results_;
 };
 }  // namespace taskflow

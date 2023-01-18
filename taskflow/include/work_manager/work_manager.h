@@ -23,7 +23,7 @@ class WorkManager : public Singleton<WorkManager> {
   }
   ~WorkManager() noexcept {}
 
-  void Execute(AnyFunc task) { pools_->enqueue(task); }
+  auto Execute(AnyFunc task) { return pools_->enqueue(task); }
 
  private:
   std::shared_ptr<ThreadPool> pools_;

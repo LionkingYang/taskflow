@@ -87,6 +87,7 @@ cc_library(
         "-rdynamic",
         "-fPIC",
         "-ldl",
+        "-lstdc++fs",
     ],
     deps = [
         "@com_github_absl//absl/strings",

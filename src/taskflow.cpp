@@ -27,11 +27,13 @@ TaskManager::TaskManager(std::shared_ptr<Graph> graph,
   so_script_ = so_script;
   input_context_ = new TaskContext(input, output);
   input_context_->Clear();
-  for (const auto& each : graph_->GetPredecessorCount()) {
+  int i = 0;
+  for (const auto& each : graph_->GetNodes()) {
     std::shared_ptr<std::atomic_int> count =
         std::make_shared<std::atomic_int>(0);
-    count->store(each.second);
-    atomic_predecessor_count_.emplace(each.first, count);
+    count->store(each->GetPredecessors().size());
+    predecessor_count_array_.push_back(count);
+    index_map_.emplace(each->GetNodeName(), i++);
   }
 }
 
@@ -102,86 +104,97 @@ bool TaskManager::MatchCondition(const string& condition) {
 }
 
 void TaskManager::Run() {
-  while (uint64_t(finish_num_.load()) != graph_->GetNodes().size()) {
-    for (const auto& node : graph_->GetNodes()) {
-      // 找出没有前置依赖并且还没执行的task
-      const string& node_name = node->GetNodeName();
-      if (atomic_predecessor_count_[node_name]->load() == 0 &&
-          !map_in_progress_.find(node_name)) {
-        // 设置执行状态为true
-        map_in_progress_.emplace(node_name, 1);
-        // 构建task任务
-        auto done = [this, node] {
-          // 执行完之后，更新依赖此task任务的依赖数
-
-          for (const auto& each : node->GetSuccessors()) {
-            atomic_predecessor_count_[each->GetNodeName()]->fetch_sub(1);
-          }
-
-          // 更新finish数组
-          finish_num_.fetch_add(1);
-        };
-        if (switch_map_.find(node_name)) {
-          done();
-          continue;
-        }
-        auto task = node->GetTask();
-        if (!task->GetCondition().empty() &&
-            !MatchCondition(task->GetCondition())) {
-          const auto& condition_map = graph_->GetConditionMap();
-          if (const auto& iter = condition_map.find(node_name);
-              iter != condition_map.end()) {
-            for (const auto& node : iter->second) {
-              switch_map_.emplace(node, 1);
-            }
-          }
-          done();
-          continue;
-        }
-        auto t = [this, node, task, done] {
-          // 执行用户设定的task
-          if (const auto func =
-                  so_script_->GetFunc(kFuncPrefix + task->GetOpName());
-              func != nullptr) {
-            vector<std::string> input;
-            for (const auto& each : node->GetPredecessors()) {
-              input.emplace_back(each->GetNodeName());
-            }
-            input_context_->task_config[node->GetNodeName()] =
-                task->GetTaskConfig();
-            input_context_->task_output[node->GetNodeName()] =
-                move(func(*input_context_, input, node->GetNodeName()));
-          } else {
-            TASKFLOW_ERROR("func of {} is empty!", node->GetNodeName());
-          }
-          // 非异步任务，执行完之后，更新依赖此task任务的依赖数
-          if (!task->is_async()) done();
-        };
-        // 异步任务直接更新依赖关系
-        if (task->is_async()) done();
-        // 选取worker执行task
-        taskflow::WorkManager::GetInstance()->Execute(t);
+  std::vector<std::future<void>> results;
+  for (int i = 0; i < graph_->GetNodes().size(); i++) {
+    auto node = graph_->GetNodes()[i];
+    auto task_func = [this, node, i]() {
+      // 等待前置任务完成
+      while (predecessor_count_array_[i]->load() != 0) {
+        std::this_thread::yield();
       }
+      // 任务完成后更新依赖数
+      auto done = [this, node] {
+        // 执行完之后，更新依赖此task任务的依赖数
+        for (const auto& each : node->GetSuccessors()) {
+          predecessor_count_array_[index_map_.at(each->GetNodeName())]
+              ->fetch_sub(1);
+        }
+      };
+      // 任务被关闭，直接退出
+      if (switch_map_.find(node->GetNodeName())) {
+        done();
+        return;
+      }
+      // 任务执行条件判断
+      auto task = node->GetTask();
+      if (!task->GetCondition().empty() &&
+          !MatchCondition(task->GetCondition())) {
+        const auto& condition_map = graph_->GetConditionMap();
+        if (const auto& iter = condition_map.find(node->GetNodeName());
+            iter != condition_map.end()) {
+          for (const auto& node_name : iter->second) {
+            switch_map_.emplace(node_name, 1);
+          }
+        }
+        done();
+        return;
+      }
+      // 执行用户设定的task
+      auto t = [node, task, done, this] {
+        auto func = so_script_->GetFunc(kFuncPrefix + task->GetOpName());
+        if (func == nullptr) {
+          TASKFLOW_ERROR("func of {} is empty!", node->GetNodeName());
+          return;
+        }
+        vector<std::string> input(node->GetPredecessors().size());
+        for (int i = 0; i < node->GetPredecessors().size(); i++) {
+          input[i] = node->GetPredecessors()[i]->GetNodeName();
+        }
+        input_context_->task_config[node->GetNodeName()] =
+            task->GetTaskConfig();
+        input_context_->task_output[node->GetNodeName()] =
+            move(func(*input_context_, input, node->GetNodeName()));
+      };
+      // 异步任务先更新依赖关系
+      if (task->is_async()) {
+        done();
+        t();
+      } else {
+        t();
+        done();
+      }
+      return;
+    };
+    // 异步任务放进专门的等待队列
+    if (!node->GetTask()->is_async()) {
+      results.push_back(
+          taskflow::WorkManager::GetInstance()->Execute(task_func));
+    } else {
+      aync_results_.push_back(
+          taskflow::WorkManager::GetInstance()->Execute(task_func));
     }
+  }
+  // 等待图执行结束
+  for (auto& result : results) {
+    result.get();
   }
 }
 
 std::string TaskManager::ToString() {
   std::string s;
-  for (auto begin = atomic_predecessor_count_.begin();
-       begin != atomic_predecessor_count_.end(); begin++) {
-    taskflow::StrAppend(&s, begin->first, ":", begin->second->load(), "\n");
-  }
-  s += "graph:\n";
-  s += graph_->ToString();
+  taskflow::StrAppend(&s, "graph:\n");
+  taskflow::StrAppend(&s, graph_->ToString());
   return s;
 }
 
 void TaskManager::Clear() {
-  atomic_predecessor_count_.clear();
-  map_in_progress_.clear();
+  for (auto& result : aync_results_) {
+    result.get();
+  }
   delete input_context_;
   graph_.reset();
+  index_map_.clear();
+  predecessor_count_array_.clear();
 }
 
 }  // namespace taskflow
