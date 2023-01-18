@@ -28,12 +28,14 @@ TaskManager::TaskManager(std::shared_ptr<Graph> graph,
   input_context_ = new TaskContext(input, output);
   input_context_->Clear();
   int i = 0;
-  for (const auto& each : graph_->GetNodes()) {
+  for (const auto& node : graph_->GetNodes()) {
     std::shared_ptr<std::atomic_int> count =
         std::make_shared<std::atomic_int>(0);
-    count->store(each->GetPredecessors().size());
+    count->store(node->GetPredecessors().size());
     predecessor_count_array_.push_back(count);
-    index_map_.emplace(each->GetNodeName(), i++);
+    index_map_.emplace(node->GetNodeName(), i++);
+    input_context_->task_config[node->GetNodeName()] =
+        node->GetTask()->GetTaskConfig();
   }
 }
 
@@ -109,7 +111,8 @@ void TaskManager::Run() {
     auto node = graph_->GetNodes()[i];
     auto task_func = [this, node, i]() {
       // 等待前置任务完成
-      while (predecessor_count_array_[i]->load() != 0) {
+      while (predecessor_count_array_[i]->load(std::memory_order_acquire) !=
+             0) {
         std::this_thread::yield();
       }
       // 任务完成后更新依赖数
@@ -117,7 +120,7 @@ void TaskManager::Run() {
         // 执行完之后，更新依赖此task任务的依赖数
         for (const auto& each : node->GetSuccessors()) {
           predecessor_count_array_[index_map_.at(each->GetNodeName())]
-              ->fetch_sub(1);
+              ->fetch_sub(1, std::memory_order_release);
         }
       };
       // 任务被关闭，直接退出
@@ -150,8 +153,6 @@ void TaskManager::Run() {
         for (int i = 0; i < node->GetPredecessors().size(); i++) {
           input[i] = node->GetPredecessors()[i]->GetNodeName();
         }
-        input_context_->task_config[node->GetNodeName()] =
-            task->GetTaskConfig();
         input_context_->task_output[node->GetNodeName()] =
             move(func(*input_context_, input, node->GetNodeName()));
       };
