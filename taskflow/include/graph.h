@@ -14,6 +14,7 @@
 
 #include "taskflow/include/container/concurrent_map.h"
 #include "taskflow/include/task.h"
+#include "taskflow/include/work_manager/work_manager.h"
 
 using std::unordered_map;
 using std::unordered_set;
@@ -35,6 +36,7 @@ class Graph {
     }
     CircleCheck();
     BuildConditionMap();
+    worker_ = std::make_shared<WorkManagerWithNum>(GetNodes().size());
     return true;
   }
 
@@ -47,6 +49,7 @@ class Graph {
   unordered_map<string, unordered_set<string>>& GetConditionMap() {
     return condition_map_;
   }
+  auto GetWorker() { return worker_; }
 
  private:
   bool BuildFromJson(const string& graph_path);
@@ -63,6 +66,7 @@ class Graph {
   unordered_map<string, NodePtr> node_map_;
   bool is_circle_ = false;
   unordered_map<string, unordered_set<string>> condition_map_;
+  std::shared_ptr<WorkManagerWithNum> worker_ = nullptr;
 };
 
 }  // namespace taskflow

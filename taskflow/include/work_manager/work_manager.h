@@ -28,4 +28,16 @@ class WorkManager : public Singleton<WorkManager> {
  private:
   std::shared_ptr<ThreadPool> pools_;
 };
+class WorkManagerWithNum {
+ public:
+  explicit WorkManagerWithNum(int num) {
+    pools_ = std::make_shared<ThreadPool>(num);
+  }
+  ~WorkManagerWithNum() noexcept {}
+
+  auto Execute(AnyFunc task) { return pools_->enqueue(task); }
+
+ private:
+  std::shared_ptr<ThreadPool> pools_;
+};
 }  // namespace taskflow

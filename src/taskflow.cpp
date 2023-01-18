@@ -111,8 +111,7 @@ void TaskManager::Run() {
     auto node = graph_->GetNodes()[i];
     auto task_func = [this, node, i]() {
       // 等待前置任务完成
-      while (predecessor_count_array_[i]->load(std::memory_order_acquire) !=
-             0) {
+      while (predecessor_count_array_[i]->load() != 0) {
         std::this_thread::yield();
       }
       // 任务完成后更新依赖数
@@ -120,7 +119,7 @@ void TaskManager::Run() {
         // 执行完之后，更新依赖此task任务的依赖数
         for (const auto& each : node->GetSuccessors()) {
           predecessor_count_array_[index_map_.at(each->GetNodeName())]
-              ->fetch_sub(1, std::memory_order_release);
+              ->fetch_sub(1);
         }
       };
       // 任务被关闭，直接退出
@@ -168,11 +167,9 @@ void TaskManager::Run() {
     };
     // 异步任务放进专门的等待队列
     if (!node->GetTask()->is_async()) {
-      results.push_back(
-          taskflow::WorkManager::GetInstance()->Execute(task_func));
+      results.push_back(graph_->GetWorker()->Execute(task_func));
     } else {
-      aync_results_.push_back(
-          taskflow::WorkManager::GetInstance()->Execute(task_func));
+      aync_results_.push_back(graph_->GetWorker()->Execute(task_func));
     }
   }
   // 等待图执行结束
