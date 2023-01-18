@@ -990,3 +990,6 @@ const T& get_value(const string& key,
     TASKFLOW_ERROR("task {} config {} has no value, use default", task_name, \
                    key);                                                     \
   }
+
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)

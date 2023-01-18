@@ -58,11 +58,11 @@ static inline bool JudgeCondition(const string& condition, const T& param_res,
 bool TaskManager::OneCondition(const string& expr) {
   vector<string> params = taskflow::StrSplitByChars(expr, ">=<|", true);
   taskflow::TrimSpaceOfVector(&params);
-  if (params.size() < 3) return false;
+  if (unlikely(params.size() < 3)) return false;
   const auto& env_key = params[0];
   const auto& env_value = params[1];
   const auto& env_type = params[2];
-  if (!input_context_->task_env.find(env_key)) {
+  if (unlikely(!input_context_->task_env.find(env_key))) {
     TASKFLOW_ERROR("env key:{} not found", env_key);
     return false;
   }
@@ -91,7 +91,7 @@ bool TaskManager::OneCondition(const string& expr) {
 }
 
 bool TaskManager::MatchCondition(const string& condition) {
-  if (taskflow::HasPrefix(condition, kConditionEnv)) {
+  if (likely(taskflow::HasPrefix(condition, kConditionEnv))) {
     string expr_str = condition.substr(4, condition.size() - 4);
     vector<string> exprs = taskflow::StrSplit(expr_str, "&&");
     taskflow::TrimSpaceOfVector(&exprs);
@@ -145,7 +145,7 @@ void TaskManager::Run() {
       // 执行用户设定的task
       auto t = [node, task, done, this] {
         auto func = so_script_->GetFunc(kFuncPrefix + task->GetOpName());
-        if (func == nullptr) {
+        if (unlikely(func == nullptr)) {
           TASKFLOW_ERROR("func of {} is empty!", node->GetNodeName());
           return;
         }
