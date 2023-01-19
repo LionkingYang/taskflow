@@ -81,18 +81,26 @@ bool Graph::BuildFromJson(const string& json_path) {
   return true;
 }
 
-void Graph::DFS(const string& node_name,
-                const unordered_map<string, string>& visited,
-                unordered_set<string>& res) {
-  for (auto node : node_map_[node_name]->GetPredecessors()) {
-    if (visited.find(node->GetNodeName()) == visited.end()) {
-      return;
+bool Graph::DFS(const string& node_name, const string& target_name,
+                unordered_map<string, bool>& cache) {
+  if (auto iter = cache.find(node_name); iter != cache.end())
+    return iter->second;
+  if (node_name == target_name) {
+    cache.emplace(node_name, true);
+    return true;
+  }
+  if (node_map_[node_name]->GetPredecessorCount() == 0) {
+    cache.emplace(node_name, false);
+    return false;
+  }
+  for (const auto& node : node_map_[node_name]->GetPredecessors()) {
+    if (!DFS(node->GetNodeName(), target_name, cache)) {
+      cache.emplace(node_name, false);
+      return false;
     }
   }
-  res.insert(node_name);
-  for (auto node : node_map_[node_name]->GetSuccessors()) {
-    DFS(node->GetNodeName(), visited, res);
-  }
+  cache.emplace(node_name, true);
+  return true;
 }
 
 unordered_set<string> Graph::FindConditionInfer(const string& node_name) {
@@ -111,8 +119,12 @@ unordered_set<string> Graph::FindConditionInfer(const string& node_name) {
     }
   }
   unordered_set<string> res;
-  for (auto node : node_map_[node_name]->GetSuccessors())
-    DFS(node->GetNodeName(), visited, res);
+  unordered_map<string, bool> cache;
+  for (const auto& item : visited) {
+    if (item.first != node_name && DFS(item.first, node_name, cache)) {
+      res.insert(item.first);
+    }
+  }
   return res;
 }
 

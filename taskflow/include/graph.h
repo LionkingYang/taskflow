@@ -56,9 +56,8 @@ class Graph {
   bool BuildFromJson(const string& graph_path);
   void CircleCheck();
   unordered_set<string> FindConditionInfer(const string& node_name);
-  void DFS(const string& node_name,
-           const unordered_map<string, string>& visited,
-           unordered_set<string>& res);
+  bool DFS(const string& node_name, const string& target_name,
+           unordered_map<string, bool>& cache);
   void BuildConditionMap();
 
  private:

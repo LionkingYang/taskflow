@@ -39,6 +39,17 @@ def dfs(prede_map, succ_map, task, visited, res):
             dfs(prede_map, succ_map, succ, visited, res)
 
 
+def dfs(pred_map, succ_map, task, dest):
+    if dest == task:
+        return True
+    if len(pred_map[task]) == 0:
+        return False
+    for each in pred_map[task]:
+        if not dfs(pred_map, succ_map, each, dest):
+            return False
+    return True
+
+
 def find_all_path(prede_map, succ_map, task):
     queue = []
     queue.append(task)
@@ -52,9 +63,9 @@ def find_all_path(prede_map, succ_map, task):
         # for succ in succs:
         queue.extend(succs)
     res = []
-    if task in succ_map:
-        for each in succ_map[task]:
-            dfs(prede_map, succ_map, each, visited, res)
+    for each in visited:
+        if each != task and dfs(prede_map, succ_map, each, task):
+            res.append(each)
     return res
 
 
@@ -62,4 +73,4 @@ if __name__ == "__main__":
     tasks = parse_json_tasks(
         "/home/lion/ops/taskflow/example/math_test/data/test_json")
     pred, succ = build_map(tasks)
-    print(find_all_path(pred, succ, "b"))
+    print(find_all_path(pred, succ, "a"))
