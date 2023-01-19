@@ -167,9 +167,11 @@ void TaskManager::Run() {
     };
     // 异步任务放进专门的等待队列
     if (!node->GetTask()->is_async()) {
-      results.push_back(graph_->GetWorker()->Execute(task_func));
+      results.push_back(graph_->GetWorker()->Execute(
+          task_func, index_map_.at(node->GetNodeName())));
     } else {
-      aync_results_.push_back(graph_->GetWorker()->Execute(task_func));
+      aync_results_.push_back(graph_->GetWorker()->Execute(
+          task_func, index_map_.at(node->GetNodeName())));
     }
   }
   // 等待图执行结束

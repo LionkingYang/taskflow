@@ -31,6 +31,7 @@ class Graph {
     predecessor_count_.clear();
     condition_map_.clear();
     nodes_.clear();
+    node_map_.clear();
     if (!BuildFromJson(graph_path)) {
       return false;
     }

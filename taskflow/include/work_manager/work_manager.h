@@ -28,16 +28,19 @@ class WorkManager : public Singleton<WorkManager> {
  private:
   std::shared_ptr<ThreadPool> pools_;
 };
+
 class WorkManagerWithNum {
  public:
   explicit WorkManagerWithNum(int num) {
-    pools_ = std::make_shared<ThreadPool>(num);
+    for (int i = 0; i < num; i++)
+      pools_.push_back(
+          std::make_shared<ThreadPool>(sysconf(_SC_NPROCESSORS_ONLN)));
   }
   ~WorkManagerWithNum() noexcept {}
 
-  auto Execute(AnyFunc task) { return pools_->enqueue(task); }
+  auto Execute(AnyFunc task, int index) { return pools_[index]->enqueue(task); }
 
  private:
-  std::shared_ptr<ThreadPool> pools_;
+  std::vector<std::shared_ptr<ThreadPool>> pools_;
 };
 }  // namespace taskflow
