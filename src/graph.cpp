@@ -104,16 +104,16 @@ bool Graph::DFS(const string& node_name, const string& target_name,
 }
 
 unordered_set<string> Graph::FindConditionInfer(const string& node_name) {
-  unordered_map<string, string> visited;
   queue<NodePtr> q;
+  unordered_set<string> visited;
   q.emplace(node_map_[node_name]);
-  visited.emplace(node_name, "1");
+  visited.insert(node_name);
   while (!q.empty()) {
     auto front = q.front();
     q.pop();
     for (auto node : front->GetSuccessors()) {
       if (visited.find(node->GetNodeName()) == visited.end()) {
-        visited.emplace(node->GetNodeName(), "1");
+        visited.insert(node->GetNodeName());
         q.emplace(node);
       }
     }
@@ -121,8 +121,8 @@ unordered_set<string> Graph::FindConditionInfer(const string& node_name) {
   unordered_set<string> res;
   unordered_map<string, bool> cache;
   for (const auto& item : visited) {
-    if (item.first != node_name && DFS(item.first, node_name, cache)) {
-      res.insert(item.first);
+    if (item != node_name && DFS(item, node_name, cache)) {
+      res.insert(item);
     }
   }
   return res;
