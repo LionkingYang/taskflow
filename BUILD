@@ -94,6 +94,7 @@ cc_library(
         "@com_github_absl//absl/time",
         "@com_github_fmtlib_fmt",
         "@com_github_spdlog",
+        "@com_github_taskflow",
         "@oneTBB//:tbb",
         "@rapidJson//:rapidjson",
     ],

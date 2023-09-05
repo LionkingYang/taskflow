@@ -88,6 +88,29 @@ cc_library(
         tag = "20211102.0",
     )
 
+    _TASKFLOW_BUILD_FILE = """
+cc_library(
+    name = "com_github_taskflow",
+    hdrs = glob(["taskflow/*.hpp", "taskflow/**/*.hpp", "taskflow/**/*.h"]),
+    includes = ["taskflow"],
+    defines = [],
+    visibility = [ "//visibility:public" ],
+)
+    """
+
+    taskflow_ver = "3.6.0"
+
+    taskflow_name = "taskflow-{ver}".format(ver = taskflow_ver)
+
+    http_archive(
+        name = "com_github_taskflow",
+        build_file_content = _TASKFLOW_BUILD_FILE,
+        strip_prefix = taskflow_name,
+        urls = [
+            "https://github.com/taskflow/taskflow/archive/v{ver}.tar.gz".format(ver = taskflow_ver),
+        ],
+    )
+
     http_archive(
         name = "rules_foreign_cc",
         strip_prefix = "rules_foreign_cc-0.9.0",

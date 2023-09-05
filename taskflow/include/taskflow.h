@@ -25,6 +25,7 @@
 #include "taskflow/include/task.h"
 #include "taskflow/include/utils/string_utils.h"
 #include "taskflow/include/work_manager/work_manager.h"
+#include "taskflow/taskflow.hpp"
 
 using std::atomic;
 using std::string;
@@ -55,10 +56,9 @@ class TaskManager {
  private:
   std::shared_ptr<Graph> graph_;
   taskflow::SoScript* so_script_;
-  TaskContext* input_context_;
+  std::shared_ptr<TaskContext> input_context_;
   taskflow::ConcurrentMap<string, int> switch_map_;
-  std::vector<std::shared_ptr<std::atomic_int>> predecessor_count_array_;
-  std::unordered_map<string, int> index_map_;
   std::vector<std::future<void>> aync_results_;
+  std::shared_ptr<tf::Executor> executor_;
 };
 }  // namespace taskflow
