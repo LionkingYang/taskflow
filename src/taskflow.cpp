@@ -25,18 +25,9 @@ TaskManager::TaskManager(std::shared_ptr<Graph> graph,
                          std::any* output) {
   graph_ = graph;
   so_script_ = so_script;
-  input_context_ = new TaskContext(input, output);
+  input_context_ = std::make_shared<TaskContext>(input, output);
   input_context_->Clear();
-  int i = 0;
-  for (const auto& node : graph_->GetNodes()) {
-    std::shared_ptr<std::atomic_int> count =
-        std::make_shared<std::atomic_int>(0);
-    count->store(node->GetPredecessors().size());
-    predecessor_count_array_.push_back(count);
-    index_map_.emplace(node->GetNodeName(), i++);
-    input_context_->task_config[node->GetNodeName()] =
-        node->GetTask()->GetTaskConfig();
-  }
+  executor_ = std::make_shared<tf::Executor>();
 }
 
 template <typename T>
@@ -106,25 +97,14 @@ bool TaskManager::MatchCondition(const string& condition) {
 }
 
 void TaskManager::Run() {
-  std::vector<std::future<void>> results;
+  tf::Taskflow tf;
+  std::unordered_map<std::string, tf::Task> task_map;
+
   for (int i = 0; i < graph_->GetNodes().size(); i++) {
     auto node = graph_->GetNodes()[i];
     auto task_func = [this, node, i]() {
-      // 等待前置任务完成
-      while (predecessor_count_array_[i]->load() != 0) {
-        std::this_thread::yield();
-      }
-      // 任务完成后更新依赖数
-      auto done = [this, node] {
-        // 执行完之后，更新依赖此task任务的依赖数
-        for (const auto& each : node->GetSuccessors()) {
-          predecessor_count_array_[index_map_.at(each->GetNodeName())]
-              ->fetch_sub(1);
-        }
-      };
       // 任务被关闭，直接退出
       if (switch_map_.find(node->GetNodeName())) {
-        done();
         return;
       }
       // 任务执行条件判断
@@ -138,11 +118,10 @@ void TaskManager::Run() {
             switch_map_.emplace(node_name, 1);
           }
         }
-        done();
         return;
       }
       // 执行用户设定的task
-      auto t = [node, task, done, this] {
+      auto t = [node, task, this] {
         auto func = so_script_->GetFunc(kFuncPrefix + task->GetOpName());
         if (unlikely(func == nullptr)) {
           TASKFLOW_ERROR("func of {} is empty!", node->GetNodeName());
@@ -155,29 +134,27 @@ void TaskManager::Run() {
         input_context_->task_output[node->GetNodeName()] =
             move(func(*input_context_, input, node->GetNodeName()));
       };
-      // 异步任务先更新依赖关系
-      if (task->is_async()) {
-        done();
-        t();
+      if (node->GetTask()->is_async()) {
+        this->executor_->silent_async(t);
       } else {
         t();
-        done();
       }
       return;
     };
-    // 异步任务放进专门的等待队列
-    if (!node->GetTask()->is_async()) {
-      results.push_back(graph_->GetWorker()->Execute(
-          task_func, index_map_.at(node->GetNodeName())));
-    } else {
-      aync_results_.push_back(graph_->GetWorker()->Execute(
-          task_func, index_map_.at(node->GetNodeName())));
+    task_map.emplace(node->GetNodeName(), tf.emplace(task_func));
+  }
+
+  for (auto& node : graph_->GetNodes()) {
+    auto tf_task = task_map.at(node->GetNodeName());
+    for (auto& pred : node->GetPredecessors()) {
+      auto tf_task_pred = task_map.at(pred->GetNodeName());
+      tf_task_pred.precede(tf_task);
     }
   }
+
   // 等待图执行结束
-  for (auto& result : results) {
-    result.get();
-  }
+  executor_->run(tf).wait();
+  executor_->wait_for_all();
 }
 
 std::string TaskManager::ToString() {
@@ -191,10 +168,8 @@ void TaskManager::Clear() {
   for (auto& result : aync_results_) {
     result.get();
   }
-  delete input_context_;
+  input_context_.reset();
   graph_.reset();
-  index_map_.clear();
-  predecessor_count_array_.clear();
 }
 
 }  // namespace taskflow
