@@ -30,6 +30,14 @@ constexpr char kSoPrefix[] = "so_on_use_";
 namespace taskflow {
 
 const taskflow::TaskFunc SoScript::GetFunc(const std::string& func) {
+  {
+    std::shared_lock lock(mutex_);
+    if (auto func_ptr = cache_syms_.find_with_value(func);
+        func_ptr != nullptr) {
+      return reinterpret_cast<taskflow::TaskFunc>(*func_ptr);
+    }
+  }
+  std::unique_lock lock(mutex_);
   if (auto func_ptr = cache_syms_.find_with_value(func); func_ptr != nullptr) {
     return reinterpret_cast<taskflow::TaskFunc>(*func_ptr);
   }
@@ -64,6 +72,7 @@ bool SoScript::Reload() {
       }
 
       if (st.st_mtim.tv_sec >= max_m) {
+        if (!max_so.empty()) remove(max_so.c_str());
         max_m = st.st_mtim.tv_sec;
         max_so = so;
       } else {
