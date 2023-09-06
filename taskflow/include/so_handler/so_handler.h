@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -38,6 +39,7 @@ class SoScript {
   int64_t last_update_ = 0;
   void* so_handler_ = nullptr;
   std::thread t_;
+  std::shared_mutex mutex_;
 };
 
 using SoScriptPtr = std::shared_ptr<SoScript>;
