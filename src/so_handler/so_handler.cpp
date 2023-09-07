@@ -22,7 +22,7 @@
 #include "taskflow/include/reloadable/reloadable_object.h"
 #include "taskflow/include/utils/file_helper.h"
 #include "taskflow/include/utils/string_utils.h"
-#include "taskflow/include/utils/time_hepler.h"
+#include "taskflow/include/utils/time_helper.h"
 
 using namespace std::chrono_literals;
 constexpr char kSoPrefix[] = "so_on_use_";

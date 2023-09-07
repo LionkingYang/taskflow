@@ -9,6 +9,7 @@
 #include "taskflow/include/json/json_parser.h"
 #include "taskflow/include/utils/latency_guard.h"
 #include "taskflow/include/utils/string_utils.h"
+#include "taskflow/include/utils/time_helper.h"
 
 using std::pair;
 using std::string;
@@ -28,6 +29,7 @@ TaskManager::TaskManager(std::shared_ptr<Graph> graph,
   input_context_ = std::make_shared<TaskContext>(input, output);
   input_context_->Clear();
   executor_ = std::make_shared<tf::Executor>();
+  start_time_ms_ = taskflow::GetCurrentTimeMillis();
 }
 
 template <typename T>
@@ -99,10 +101,10 @@ bool TaskManager::MatchCondition(const string& condition) {
 void TaskManager::Run() {
   tf::Taskflow tf;
   std::unordered_map<std::string, tf::Task> task_map;
-
+  auto timeout = graph_->GetTimeout();
   for (int i = 0; i < graph_->GetNodes().size(); i++) {
     auto node = graph_->GetNodes()[i];
-    auto task_func = [this, node, i]() {
+    auto task_func = [this, node, i, timeout]() {
       // 任务被关闭，直接退出
       if (switch_map_.find(node->GetNodeName())) {
         return;
@@ -120,6 +122,21 @@ void TaskManager::Run() {
         }
         return;
       }
+      // 判断是否超时
+      if (abord_.load(std::memory_order_acquire)) {
+        TASKFLOW_ERROR("abort operator because pre job timeout:{}",
+                       node->GetNodeName());
+        return;
+      }
+      uint64_t time_cost = taskflow::GetCurrentTimeMillis() - start_time_ms_;
+      if (time_cost + node->GetTimeout() >= timeout) {
+        TASKFLOW_ERROR(
+            "graph execute timeout, cost now:{}, timeout of operator:{}, abort "
+            "operator:{}!",
+            time_cost, node->GetTimeout(), node->GetNodeName());
+        abord_.store(true, std::memory_order_release);
+        return;
+      }
       // 执行用户设定的task
       auto t = [node, task, this] {
         auto func = so_script_->GetFunc(kFuncPrefix + task->GetOpName());
@@ -134,11 +151,8 @@ void TaskManager::Run() {
         input_context_->task_output[node->GetNodeName()] =
             move(func(*input_context_, input, node->GetNodeName()));
       };
-      if (node->GetTask()->is_async()) {
-        this->executor_->silent_async(t);
-      } else {
-        t();
-      }
+
+      t();
       return;
     };
     task_map.emplace(node->GetNodeName(), tf.emplace(task_func));
@@ -154,7 +168,6 @@ void TaskManager::Run() {
 
   // 等待图执行结束
   executor_->run(tf).wait();
-  executor_->wait_for_all();
 }
 
 std::string TaskManager::ToString() {

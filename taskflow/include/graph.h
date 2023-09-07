@@ -51,6 +51,7 @@ class Graph {
     return condition_map_;
   }
   auto GetWorker() { return worker_; }
+  uint64_t GetTimeout() { return timeout_; }
 
  private:
   bool BuildFromJson(const string& graph_path);
@@ -67,6 +68,7 @@ class Graph {
   bool is_circle_ = false;
   unordered_map<string, unordered_set<string>> condition_map_;
   std::shared_ptr<WorkManagerWithNum> worker_ = nullptr;
+  uint64_t timeout_;
 };
 
 }  // namespace taskflow

@@ -60,5 +60,7 @@ class TaskManager {
   taskflow::ConcurrentMap<string, int> switch_map_;
   std::vector<std::future<void>> aync_results_;
   std::shared_ptr<tf::Executor> executor_;
+  uint64_t start_time_ms_;
+  std::atomic_bool abord_ = false;
 };
 }  // namespace taskflow
