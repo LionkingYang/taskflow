@@ -53,11 +53,13 @@ bool Graph::BuildFromJson(const string& json_path) {
     TASKFLOW_CRITICAL("error in parse json");
     return false;
   }
+  timeout_ = graph.timeout;
   // 遍历一遍，拿到Node列表
   for (const auto& node_conf : graph.tasks) {
     TaskPtr task = std::make_shared<Task>(node_conf.op_name, node_conf.config,
                                           node_conf.condition, node_conf.async);
-    NodePtr node = std::make_shared<Node>(node_conf.task_name, task);
+    NodePtr node =
+        std::make_shared<Node>(node_conf.task_name, task, node_conf.timeout);
 
     nodes_.emplace_back(node);
     node_map_.emplace(node->GetNodeName(), node);

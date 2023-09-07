@@ -41,8 +41,8 @@ class Node;
 using NodePtr = std::shared_ptr<Node>;
 class Node {
  public:
-  Node(const string& node_name, TaskPtr task_ptr)
-      : node_name_(node_name), task_(task_ptr) {}
+  Node(const string& node_name, TaskPtr task_ptr, uint64_t timeout)
+      : node_name_(node_name), task_(task_ptr), timeout_(timeout) {}
   const string& GetNodeName() { return node_name_; }
   const TaskPtr GetTask() { return task_; }
   void AddPredecessor(NodePtr node) { predecessors_.push_back(node); }
@@ -50,11 +50,13 @@ class Node {
   int GetPredecessorCount() const { return predecessors_.size(); }
   const vector<NodePtr>& GetPredecessors() const { return predecessors_; }
   const vector<NodePtr>& GetSuccessors() const { return successors_; }
+  const uint64_t GetTimeout() const { return timeout_; }
 
  private:
   const string node_name_;
   vector<NodePtr> predecessors_;
   vector<NodePtr> successors_;
   TaskPtr task_ = nullptr;
+  uint64_t timeout_;
 };
 }  // namespace taskflow

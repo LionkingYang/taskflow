@@ -1,23 +1,27 @@
 {
+    "timeout": 500,
     "tasks": [
         {
             "task_name": "ParseRequest",
             "dependencies": [],
-            "op_name": "ParseRequest"
+            "op_name": "ParseRequest",
+            "timeout": 10
         },
         {
             "task_name": "UU",
             "dependencies": [
                 "ParseRequest"
             ],
-            "op_name": "UU"
+            "op_name": "UU",
+            "timeout": 10
         },
         {
             "task_name": "BlackList",
             "dependencies": [
                 "ParseRequest"
             ],
-            "op_name": "BlackList"
+            "op_name": "BlackList",
+            "timeout": 10
         },
         {
             "task_name": "RecallCB",
@@ -26,7 +30,8 @@
                 "BlackList"
             ],
             "op_name": "RecallOP",
-            "condition": "env:age>=18|int"
+            "condition": "env:age>=18|int",
+            "timeout": 10
         },
         {
             "task_name": "RecallEMB",
@@ -34,7 +39,9 @@
                 "UU",
                 "BlackList"
             ],
-            "op_name": "RecallOP"
+            "async": true,
+            "op_name": "RecallOP",
+            "timeout": 10
         },
         {
             "task_name": "RecallMerge",
@@ -42,28 +49,32 @@
                 "RecallCB",
                 "RecallEMB"
             ],
-            "op_name": "RecallMerge"
+            "op_name": "RecallMerge",
+            "timeout": 10
         },
         {
             "task_name": "Rank",
             "dependencies": [
                 "RecallMerge"
             ],
-            "op_name": "Rank"
+            "op_name": "Rank",
+            "timeout": 10
         },
         {
             "task_name": "Policy",
             "dependencies": [
                 "Rank"
             ],
-            "op_name": "Policy"
+            "op_name": "Policy",
+            "timeout": 10
         },
         {
             "task_name": "FillResponse",
             "dependencies": [
                 "Policy"
             ],
-            "op_name": "FillResponse"
+            "op_name": "FillResponse",
+            "timeout": 10
         }
     ]
 }

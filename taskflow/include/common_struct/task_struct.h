@@ -21,12 +21,15 @@ struct NodeConf {
   string config;
   string condition;
   bool async = false;
-  KCFG_DEFINE_FIELDS(task_name, op_name, config, condition, async, dependencies)
+  int timeout = 100;
+  KCFG_DEFINE_FIELDS(task_name, op_name, config, condition, async, dependencies,
+                     timeout)
 };
 
 struct GraphConf {
   vector<NodeConf> tasks;
-  KCFG_DEFINE_FIELDS(tasks)
+  int timeout = 500;
+  KCFG_DEFINE_FIELDS(tasks, timeout)
   bool Init(const std::string& path) {
     kcfg::ParseFromJsonFile(path, *this);
     return true;
