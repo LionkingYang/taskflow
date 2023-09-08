@@ -895,7 +895,7 @@ bool ValueTrans(const std::string& origin_v, T* v) {
 
 #define GET_CONFIG_KEY(key, type, v, default_v)                              \
   type v = default_v;                                                        \
-  if (context.task_config.find(task_name) &&                                 \
+  if (context.task_config.find(task_name) != context.task_config.end() &&    \
       context.task_config[task_name].count(key)) {                           \
     const auto& origin_v = context.task_config[task_name][key];              \
     if (!ValueTrans<type>(origin_v, &v)) {                                   \
