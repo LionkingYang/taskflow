@@ -42,8 +42,7 @@ struct TaskContext {
   std::any* global_output;
   taskflow::ConcurrentMap<string, std::any> task_output;
   taskflow::ConcurrentMap<string, std::string> task_env;
-  taskflow::ConcurrentMap<string, std::unordered_map<string, string>>
-      task_config;
+  std::unordered_map<string, std::unordered_map<string, string>> task_config;
   TaskContext(const std::any& input, std::any* output)
       : global_input(input), global_output(output) {}
   ~TaskContext() { Clear(); }

@@ -178,9 +178,6 @@ std::string TaskManager::ToString() {
 }
 
 void TaskManager::Clear() {
-  for (auto& result : aync_results_) {
-    result.get();
-  }
   input_context_.reset();
   graph_.reset();
 }

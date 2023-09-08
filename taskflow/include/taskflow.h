@@ -24,7 +24,6 @@
 #include "taskflow/include/so_handler/so_handler.h"
 #include "taskflow/include/task.h"
 #include "taskflow/include/utils/string_utils.h"
-#include "taskflow/include/work_manager/work_manager.h"
 #include "taskflow/taskflow.hpp"
 
 using std::atomic;
@@ -58,7 +57,6 @@ class TaskManager {
   taskflow::SoScript* so_script_;
   std::shared_ptr<TaskContext> input_context_;
   taskflow::ConcurrentMap<string, int> switch_map_;
-  std::vector<std::future<void>> aync_results_;
   std::shared_ptr<tf::Executor> executor_;
   uint64_t start_time_ms_;
   std::atomic_bool abord_ = false;
