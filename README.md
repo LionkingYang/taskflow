@@ -54,6 +54,7 @@ TaskFlow的执行存在以下难点：
 
 ```json
 {
+    "timeout": 100,
     "tasks": [{
         "task_name": "",
         "dependencies": [],
@@ -62,7 +63,8 @@ TaskFlow的执行存在以下难点：
         "config": "a=1|b=2",
         "final_output": "1",
         "async":true,
-      	"condition": "env:param>10|int"
+      	"condition": "env:param>10|int",
+        "timeout": 10
     }]
 }
 ```
@@ -78,6 +80,7 @@ TaskFlow的执行存在以下难点：
 - final_output: **可选，但是只能有一个算子设置**。全图只能有一个对外输出算子， 如果填写了此字段且字段值为"1"，自动生成项目算子代码时，该算子中会出现**WRITE_TO_FINAL_OUTPUT**宏。
 - async: **可选，默认为false**。是否为异步任务，对于异步任务，引擎不会等待其返回结果，因此**异步任务不建议作为其他任务的依赖**。
 - condition: **可选**。算子执行的条件，其中env代表通过用户设置的环境变量来判断条件是否成立，param为用户设置的环境变量名，用户可以通过SET_ENV(key, value)宏在算子中设置环境变量的值，或者使用TaskManager的SetEnv函数来设置。目前支持: **>=, <=, >, <, =**五种条件判断。int代表输入的value为整形，目前支持**int, double, float, string**四种类型。
+- timeout: **可选，默认分别为500，100**。分别可设置图超时以及算子的超时。其中算子的超时并不会精确控制算子的执行时间，而是根据现有耗时+算子超时去判断全图是否会超时。
 
 ### 算子编写
 
@@ -215,7 +218,10 @@ f((f:AddNum)) --> h((h:AccumAdd))
 
 
 
+### 超时控制
+对于图的超时控制，由于图结构的复杂，想要精确的控制每个算子的超时时间比较困难，因此这里使用了一个简化的超时控制策略：以全图的超时时间为基准，执行到某个算子时，如果算子本身设置的超时时间加上图已经执行的时间大于设置的全图的超时时间，那么就判断图执行超时。
 
+比如说如果一个图的超时时间设置的是100ms，执行到算子A时，已经执行了90ms，而算子A设置的超时时间是15ms，那么可以推测，全图有很大的概率无法执行完成，于是判断图执行超时，放弃图的执行。
 ### 执行
 
 以下demo可以在[recmd_demo](https://github.com/LionkingYang/taskflow/tree/main/example/recmd_test)下找到，主要是模拟推荐服务中网关服务的调度过程(更简单的demo看这里:[math_demo](https://github.com/LionkingYang/taskflow/tree/main/example/math_test))：
